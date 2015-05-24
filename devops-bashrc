@@ -1,4 +1,3 @@
-#!/bin/bash
 ##---------------------------------------------------------------------------
 ## @(#)$Id$
 ##title          :.bashrc
@@ -35,26 +34,33 @@ get_sha() {
   git rev-parse --short HEAD 2>/dev/null
 }
 
-# Different OS have these in various places.
+# Different OS has this in various places.
 if [ -s /usr/share/git-core/contrib/completion/git-prompt.sh ];then
-  . /usr/share/git-core/contrib/completion/git-prompt.sh
+  source /usr/share/git-core/contrib/completion/git-prompt.sh
 elif [ -s /usr/lib/git-core/git-sh-prompt ];then
-  . /usr/lib/git-core/git-sh-prompt
+  source /usr/lib/git-core/git-sh-prompt
 fi
+# alternative - load into all login sessions by default.
+# it's useful enough script to do so.
+#   cd /etc/profile.d
+#   wget https://github.com/git/git/raw/master/contrib/completion/git-prompt.sh
 
+
+export PROJECT_HOME=~/PROJECTS
 if [ -s /usr/bin/virtualenvwrapper.sh ];then
-  . /usr/bin/virtualenvwrapper.sh
+  source /usr/bin/virtualenvwrapper.sh
 elif [ -s /usr/local/bin/virtualenvwrapper.sh ];then
-  . /usr/bin/virtualenvwrapper.sh
+  source /usr/local/bin/virtualenvwrapper.sh
+else 
+  VENV=$(which virtualenvwrapper.sh 2> /dev/null)
+  if [ -n "$VENV" ];then
+    source $VENV
+  fi
 fi
-
 
 export PATH="$PATH:$HOME/.rvm/bin" 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" 
 
-
-export PROJECT_HOME=~/PROJECTS
-umask 0027
 
 
 # Reset
@@ -76,3 +82,6 @@ GIT_PS1_SHOWSTASHSTATE=1
 GIT_PS1_SHOWUPSTREAM="auto"
 
 PROMPT_COMMAND='__git_ps1 "${VIRTUAL_ENV:+[${Yellow}$(basename $VIRTUAL_ENV)$Color_Off]\n}${GEM_HOME:+[${Cyan}$(rvm-prompt i v p g)$Color_Off]\n}" "\h:\W \u\\\$ " "[%s $(get_sha)]\n";set_titlebar "$USER@${HOSTNAME%%.*} $(basename $PWD)"'
+
+# personal preferences.
+umask 0077
