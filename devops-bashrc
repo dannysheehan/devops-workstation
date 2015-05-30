@@ -14,15 +14,30 @@
 ##  you are logged in at.
 ##
 
-# guard to avoid breaking scp and sftp if output is displayed.
-[[ $- == *i* ]] || return 0
+# personal preferences.
+umask 0077
+mkdir -p ~/.backups ~/.tmp ~/bin
+export PROJECT_HOME=~/PROJECTS
 
 # Uncomment the following line if you don't like systemctl's auto-paging feature:
 # export SYSTEMD_PAGER=
 
+# guard to avoid breaking scp and sftp if output is displayed.
+# [[ $- == *i* ]] || return 0
+#
+# much quicker method
+[ -z "$PS1" ] && return
+
+# show colors when greping through logs
+export GREP_OPTIONS='--color=auto'
+export GREP_COLOR='1;32'
+
+
 # User specific aliases and functions
 
-function set_titlebar {
+
+
+set_titlebar() {
   case $TERM in
     *xterm*|ansi|rxvt)
       printf "\033]0;%s\007" "$*"
@@ -30,23 +45,31 @@ function set_titlebar {
     esac
 }
 
-get_sha() {
-  git rev-parse --short HEAD 2>/dev/null
-}
 
-# Different OS has this in various places.
+# show error code from previous failed commands
+EC() { echo -e '\e[1;33m'code $?'\e[m\n'; }
+trap EC ERR
+
+mkcd()    { mkdir "$1" && cd "$1"; }
+calc()    { awk "BEGIN{ print $* }" ;}
+hex2dec() { echo $((16#$1)); }
+dec2hex() { awk -v num=$1 'BEGIN { printf "%x\n", num}'; }
+mktar()   { tar cztf "${1%%/}.tar.gz" "${1%%/}/"; }
+bu()      { cp $1 ~/.backups/$(basename $1)-$(date +%Y%m%d%H%M).bk; }
+
+get_sha() { git rev-parse --short HEAD 2>/dev/null; }
+
+
 if [ -s /usr/share/git-core/contrib/completion/git-prompt.sh ];then
   source /usr/share/git-core/contrib/completion/git-prompt.sh
 elif [ -s /usr/lib/git-core/git-sh-prompt ];then
   source /usr/lib/git-core/git-sh-prompt
+elif [ -s ~/bin/git-prompt.sh ];then
+  # wget https://github.com/git/git/raw/master/contrib/completion/git-prompt.sh
+  source ~/bin/git-prompt.sh
 fi
-# alternative - load into all login sessions by default.
-# it's useful enough script to do so.
-#   cd /etc/profile.d
-#   wget https://github.com/git/git/raw/master/contrib/completion/git-prompt.sh
 
 
-export PROJECT_HOME=~/PROJECTS
 if [ -s /usr/bin/virtualenvwrapper.sh ];then
   source /usr/bin/virtualenvwrapper.sh
 elif [ -s /usr/local/bin/virtualenvwrapper.sh ];then
@@ -60,7 +83,6 @@ fi
 
 export PATH="$PATH:$HOME/.rvm/bin" 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" 
-
 
 
 # Reset
@@ -83,5 +105,3 @@ GIT_PS1_SHOWUPSTREAM="auto"
 
 PROMPT_COMMAND='__git_ps1 "${VIRTUAL_ENV:+[${Yellow}$(basename $VIRTUAL_ENV)$Color_Off]\n}${GEM_HOME:+[${Cyan}$(rvm-prompt i v p g)$Color_Off]\n}" "\h:\W \u\\\$ " "[%s $(get_sha)]\n";set_titlebar "$USER@${HOSTNAME%%.*} $(basename $PWD)"'
 
-# personal preferences.
-umask 0077
