@@ -46,9 +46,6 @@ set_titlebar() {
 }
 
 
-# show error code from previous failed commands
-EC() { echo -e '\e[1;33m'code $?'\e[m\n'; }
-trap EC ERR
 
 mkcd()    { mkdir "$1" && cd "$1"; }
 calc()    { awk "BEGIN{ print $* }" ;}
@@ -103,5 +100,4 @@ GIT_PS1_SHOWCOLORHINTS=1
 GIT_PS1_SHOWSTASHSTATE=1
 GIT_PS1_SHOWUPSTREAM="auto"
 
-PROMPT_COMMAND='__git_ps1 "${VIRTUAL_ENV:+[${Yellow}$(basename $VIRTUAL_ENV)$Color_Off]\n}${GEM_HOME:+[${Cyan}$(rvm-prompt i v p g)$Color_Off]\n}" "\h:\W \u\\\$ " "[%s $(get_sha)]\n";set_titlebar "$USER@${HOSTNAME%%.*} $(basename $PWD)"'
-
+PROMPT_COMMAND='__git_ps1 "[${Yellow}$(echo -e code $?)$Color_Off]\n${VIRTUAL_ENV:+[${Yellow}$(basename $VIRTUAL_ENV)$Color_Off]\n}${GEM_HOME:+[${Cyan}$(rvm-prompt i v p g)$Color_Off]\n}" "\h:\W \u\\\$ " "[%s $(get_sha)]\n";set_titlebar "$USER@${HOSTNAME%%.*} $(basename $PWD)"'
