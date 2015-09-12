@@ -28,9 +28,9 @@ export PROJECT_HOME=~/PROJECTS
 # much quicker method
 [ -z "$PS1" ] && return
 
-# show colors when greping through logs
-export GREP_OPTIONS='--color=auto'
-export GREP_COLOR='1;32'
+# show colors when grepping through logs
+my_grep_options=(--color=auto --exclude-dir=.cvs --exclude-dir=.git --exclude-dir=.svn)
+alias grep='grep $my_grep_options' egrep='grep -E $my_grep_options' fgrep='grep -F $my_grep_options'
 
 
 # User specific aliases and functions
@@ -101,3 +101,11 @@ GIT_PS1_SHOWSTASHSTATE=1
 GIT_PS1_SHOWUPSTREAM="auto"
 
 PROMPT_COMMAND='__git_ps1 "[${Yellow}$(echo -e code $?)$Color_Off]\n${VIRTUAL_ENV:+[${Yellow}$(basename $VIRTUAL_ENV)$Color_Off]\n}${GEM_HOME:+[${Cyan}$(rvm-prompt i v p g)$Color_Off]\n}" "\h:\W \u\\\$ " "[%s $(get_sha)]\n";set_titlebar "$USER@${HOSTNAME%%.*} $(basename $PWD)"'
+
+
+if [ ! -S ~/.ssh/ssh_auth_sock ]; then
+  eval `ssh-agent`
+  ln -sf "$SSH_AUTH_SOCK" ~/.ssh/ssh_auth_sock
+fi
+export SSH_AUTH_SOCK=~/.ssh/ssh_auth_sock
+ssh-add -l | grep "The agent has no identities" && ssh-add
