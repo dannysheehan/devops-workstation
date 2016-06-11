@@ -15,7 +15,7 @@
 ##
 
 # personal preferences.
-umask 0077
+# umask 0077
 mkdir -p ~/.backups ~/.tmp ~/bin
 export PROJECT_HOME=~/PROJECTS
 
