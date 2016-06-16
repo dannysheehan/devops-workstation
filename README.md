@@ -2,7 +2,8 @@
 
 Configuration for devops workstation. 
 
-Final phase will be to put under puppet control.
+Final phase will be to put under ansible control so you can
+easily push out profiles to the servers you manage.
 
 
 ## devops .bashrc
@@ -25,11 +26,11 @@ Final phase will be to put under puppet control.
 
 
 ### Example 
-````
+
+```
 $ . ./devops-bashrc 
 [rails-project]
 [ruby-head@rails]
-
 
 taurus:PROJECTS danny$ workon HPC-Scripts
 [HPC-Scripts]

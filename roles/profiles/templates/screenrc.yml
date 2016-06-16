@@ -1,0 +1,29 @@
+# ==============================================================================
+# Don't display the copyright page
+startup_message off
+
+# No annoying audible bell, using "visual bell"
+vbell off
+vbell_msg "   -- Bell,Bell!! --   "
+
+# Automatically detach on hangup. 
+  autodetach on        # default: on
+
+# Change default scrollback value for new windows
+  defscrollback 3000      # default: 100
+
+setenv LC_CTYPE en_AU.UTF-8
+
+defutf8 on
+utf8 on on 
+
+caption string "%?%F%{= Bk}%? %C%A %D %d-%m-%Y %{= kB} %t%= %?%F%{= Bk}%:%{= wk}%? %n "
+hardstatus alwayslastline
+hardstatus string '%{= kG}[ %{G}%H %{g}][%= %{= kw}%?%-Lw%?%{r}(%{W}%n*%f%t%?(%u)%?%{r})%{w}%?%+Lw%?%?%= %{g}][%{B} %d/%m %{W}%c %{g}]'
+
+# STARTUP SCREENS
+# ===============================================================
+screen -t netstat   0 sudo watch -n4 'netstat -punt'
+screen -t lsof      1 sudo watch -n3 'lsof -P -i -n'
+screen -t syslog    2 top
+screen -t bash      3

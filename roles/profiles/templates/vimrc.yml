@@ -12,8 +12,8 @@ nmap <C-H> : set invlist<CR>
 if &t_Co > 2 || has("gui_running")
   syntax on
   set hlsearch
-  set background=light
-  colorscheme solarized
+  "set background=light
+  "colorscheme solarized
 endif
 
 
@@ -37,7 +37,7 @@ set wildignore=*.o,*~,*.pyc
 set showmatch
 
 " keep backups and swap files safe from prying eyes.
-set directory=~/tmp
-set backupdir=~/tmp
-set undodir=~/tmp
+set directory=~/.tmp
+set backupdir=~/.tmp
+set undodir=~/.tmp
 

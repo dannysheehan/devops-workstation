@@ -1,0 +1,12 @@
+---
+# tasks to copy profile files   
+
+
+- name: copy profile files to users home directory
+  template:
+    src="{{ item }}.yml"
+    dest="~/.{{ item }}"
+  with_items:
+    - devopsrc
+    - vimrc
+    - screenrc

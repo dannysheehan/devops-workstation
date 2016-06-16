@@ -64,6 +64,8 @@ elif [ -s /usr/lib/git-core/git-sh-prompt ];then
 elif [ -s ~/bin/git-prompt.sh ];then
   # wget https://github.com/git/git/raw/master/contrib/completion/git-prompt.sh
   source ~/bin/git-prompt.sh
+else
+  return
 fi
 
 
