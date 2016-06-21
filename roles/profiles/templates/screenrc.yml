@@ -25,5 +25,5 @@ hardstatus string '%{= kG}[ %{G}%H %{g}][%= %{= kw}%?%-Lw%?%{r}(%{W}%n*%f%t%?(%u
 # ===============================================================
 screen -t netstat   0 sudo watch -n4 'netstat -punt'
 screen -t lsof      1 sudo watch -n3 'lsof -P -i -n'
-screen -t syslog    2 top
+screen -t top       2 top
 screen -t bash      3
