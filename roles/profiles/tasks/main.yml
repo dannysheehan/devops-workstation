@@ -13,5 +13,16 @@
 
 - name: add devopsrc to .bashrc
   lineinfile:
+    create=yes
     dest=~/.bashrc
     line=". ~/.devopsrc"
+
+- name: check if there is a .profile
+  stat: path=~/.profile
+  register: file_dot_profile
+
+- name: copy in a .profile if mssing
+  copy:
+    src: profile
+    dest: ~/.profile
+  when: file_dot_profile.stat.exists == False

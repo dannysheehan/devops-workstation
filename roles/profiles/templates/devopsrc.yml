@@ -68,6 +68,8 @@ asn()  {  whois -h asn.shadowserver.org "origin $1"; }
 
 httpdebug () { /usr/bin/curl $@ -o /dev/null -w "dns: %{time_namelookup} connect: %{time_connect} pretransfer: %{time_pretransfer} starttransfer: %{time_starttransfer} total: %{time_total}\n" ; }
 
+
+alias dreaded='ps axl | awk '\''$10 ~ /D/'\'''
 alias memhogs='ps wwaxm -o pid,stat,vsize,rss,time,command | head -10'
 alias cpuhogs='ps wwaxr -o pid,stat,%cpu,time,command | head -10'
 alias myip='dig +short myip.opendns.com @resolver1.opendns.com'
