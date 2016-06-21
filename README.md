@@ -2,11 +2,15 @@
 
 Configuration for devops workstation. 
 
-Final phase will be to put under ansible control so you can
+Put your /home environment under ansible control so you can
 easily push out profiles to the servers you manage.
 
+- .basrhc aliases and settings
+- .vimrc configuration
+- .screenrc settings (specific to each host -todo )
+- .ssh/config  - todo
 
-## devops .bashrc
+## .bashrc
 
 - Configures bash prompt to include
     - git - branch 
