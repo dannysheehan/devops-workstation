@@ -10,3 +10,8 @@
     - devopsrc
     - vimrc
     - screenrc
+
+- name: add devopsrc to .bashrc
+  lineinfile:
+    dest=~/.bashrc
+    line=". ~/.devopsrc"
