@@ -19,6 +19,7 @@
 mkdir -p ~/.backups ~/.tmp ~/bin
 export PROJECT_HOME=~/PROJECTS
 export EDITOR=vi
+export EC2_INI_PATH=/etc/ansible/ec2.ini 
 
 # Uncomment the following line if you don't like systemctl's auto-paging feature:
 # export SYSTEMD_PAGER=
@@ -56,6 +57,8 @@ hex2dec() { echo $((16#$1)); }
 dec2hex() { awk -v num=$1 'BEGIN { printf "%x\n", num}'; }
 mktar()   { tar cztf "${1%%/}.tar.gz" "${1%%/}/"; }
 bu()      { cp $1 ~/.backups/$(basename $1)-$(date +%Y%m%d%H%M).bk; }
+
+uncomment() { egrep -v '^[[:space:]]*$|^ *#' "$1"; }
 
 get_sha() { git rev-parse --short HEAD 2>/dev/null; }
 
