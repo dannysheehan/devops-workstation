@@ -17,9 +17,12 @@
 # personal preferences.
 # umask 0077
 mkdir -p ~/.backups ~/.tmp ~/bin
+
 export PROJECT_HOME=~/PROJECTS
-export WORKON_HOME=~/PROJECTS
+export WORKON_HOME=~/.virtualenvs
+
 export EDITOR=vi
+
 export EC2_INI_PATH=/etc/ansible/ec2.ini 
 export PYENV_VIRTUALENV_DISABLE_PROMPT=1
 
@@ -105,7 +108,7 @@ elif [ -s /usr/lib/git-core/git-sh-prompt ];then
   source /usr/lib/git-core/git-sh-prompt
 elif [ -s ~/.git-prompt.sh ];then
   source ~/.git-prompt.sh
-elif which -s wget && wget -q $GPROMPT -O ~/.git-prompt.sh
+elif which wget > /dev/null && wget -q $GPROMPT -O ~/.git-prompt.sh
 then
   source ~/bin/git-prompt.sh
 else
@@ -119,7 +122,7 @@ fi
 # $ mkvirtualenv env2 -p $(which python3.4)
 # #
 export PATH="$HOME/.pyenv/bin:$PATH"
-if which -s pyenv; then
+if which pyenv > /dev/null; then
   # pyenv
   eval "$(pyenv init -)"
   eval "$(pyenv virtualenv-init -)"
