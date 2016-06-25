@@ -16,7 +16,7 @@
 
 # personal preferences.
 # umask 0077
-mkdir -p ~/.backups ~/.tmp ~/bin
+mkdir -p ~/.backups ~/.tmp ~/.local/bin
 
 export PROJECT_HOME=~/PROJECTS
 export WORKON_HOME=~/.virtualenvs
@@ -40,9 +40,7 @@ WEATHER="Brisbane?m"
 export HISTCONTROL=ignoredups
 
 # show colors when grepping through logs
-my_grep_options=(--color=auto --exclude-dir=.cvs --exclude-dir=.git --exclude-dir=.svn)
-alias grep='grep $my_grep_options' egrep='grep -E $my_grep_options' fgrep='grep -F $my_grep_options'
-
+my_grep_options=(--color=auto --exclude-dir=.cvs --exclude-dir=.git --exclude-dir=.svn) alias grep='grep $my_grep_options' egrep='grep -E $my_grep_options' fgrep='grep -F $my_grep_options' 
 
 # User specific aliases and functions
 
@@ -56,6 +54,38 @@ set_titlebar() {
     esac
 }
 
+
+# install  colordiff package :)
+alias cdiff='colordiff'
+
+alias mount='mount |column -t'
+
+alias h='history'
+alias j='jobs -l'
+
+alias path='echo -e ${PATH//:/\\n}'
+alias nowtime='date +"%T"'
+alias nowdate='date +"%Y%m%d"'
+
+# do not delete / or prompt if deleting more than 3 files at a time #
+alias rm='rm -I --preserve-root'
+
+# confirm
+alias mv='mv -i'
+alias cp='cp -i'
+alias ln='ln -i'
+
+# prevent changing perms on /
+alias chown='chown --preserve-root'
+alias chmod='chmod --preserve-root'
+alias chgrp='chgrp --preserve-root'
+
+
+# get GPU ram on desktop 
+alias gpumeminfo='grep -i --color memory /var/log/Xorg.0.log'
+
+# always resume/continue partial downloads.
+alias wget='wget -c'
 
 
 mkcd()    { mkdir "$1" && cd "$1"; }
@@ -79,26 +109,38 @@ asn()  {  whois -h asn.shadowserver.org "origin $1"; }
 httpdebug () { /usr/bin/curl $@ -o /dev/null -w "dns: %{time_namelookup} connect: %{time_connect} pretransfer: %{time_pretransfer} starttransfer: %{time_starttransfer} total: %{time_total}\n" ; }
 
 
+# apt install pandoc
+# recommend: qupzilla as ultra lightweight browser
+# qupzill ./html/<file>.html
+md2html() { mkdir ./html;pandoc -f markdown -t html "$1" > ./html/${1%.*}.html; }
+
+# osx only
+trash()   { command mv "$@" ~/.Trash ; }
+spotlight() { mdfind "kMDItemDisplayName == '$@'wc"; }
+
+
 alias dreaded='ps axl | awk '\''$10 ~ /D/'\'''
 alias memhogs='ps wwaxm -o pid,stat,vsize,rss,time,command | head -10'
 alias cpuhogs='ps wwaxr -o pid,stat,%cpu,time,command | head -10'
 alias myip='dig +short myip.opendns.com @resolver1.opendns.com'
 
+# get web server headers #
+alias header='curl -I'
+
+# find out if remote server supports gzip / mod_deflate or not #
+alias headerc='curl -I --compress'
+
 # Quick way to serve files in HTTP from the local dir (be careful)
 alias webs='python -m SimpleHTTPServer'
 
-alias folders='find . -maxdepth 1 -type d -print0 | xargs -0 du -sk | sort -rn'
-
+# tail all logs
 alias logs="find /var/log -type f -exec file {} \; | grep 'text' | cut -d' ' -f1 | sed -e's/:$//g' | grep -v '[0-9]$' | xargs tail -f"
 
-alias iptl='sudo /sbin/iptables -L -n -v --line-numbers'
+# show fwrules
+alias fwrules='sudo /sbin/iptables -L -n -v --line-numbers'
 
-alias hidden='ls -drt1 \.* | egrep -v "^(\.|\.\.)$"'
-
-
-# osx only
-trash()   { command mv "$@" ~/.Trash ; }
-spotlight() { mdfind "kMDItemDisplayName == '$@'wc"; }
+# show only hidden files
+alias hidden="ls -drt1 \.* | egrep -v \"^(\.|\.\.)$\""
 
 
 GPROMPT="https://github.com/git/git/raw/master/contrib/completion/git-prompt.sh"
@@ -110,7 +152,7 @@ elif [ -s ~/.git-prompt.sh ];then
   source ~/.git-prompt.sh
 elif which wget > /dev/null && wget -q $GPROMPT -O ~/.git-prompt.sh
 then
-  source ~/bin/git-prompt.sh
+  source ~/.git-prompt.sh
 else
   return
 fi
@@ -143,6 +185,10 @@ fi
 
 export PATH="$PATH:$HOME/.rvm/bin" 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" 
+
+export PATH=$PATH:~/.local/bin
+# pip install --user --upgrade speedtest_cli
+alias speedtest="which pip > /dev/null && pip -q show speedtest-cli && speedtest-cli --simple"
 
 
 # Reset
