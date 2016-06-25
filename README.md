@@ -27,7 +27,8 @@ easily push out profiles to the servers you manage.
     - [rvm](http://sirupsen.com/get-started-right-with-rvm/)
     - [don't reinvent the (git shell prompt) wheel](http://ithaca.arpinum.org/2013/01/02/git-prompt.html)
     - [gitconfig](https://github.com/jamming/dotfiles/blob/master/git/gitconfig)
-
+    - [awsome list for mac](https://natelandau.com/my-mac-osx-bash_profile/)
+    - [git aliases](http://durdn.com/blog/2012/11/22/must-have-git-aliases-advanced-examples/)
 
 ### Example 
 

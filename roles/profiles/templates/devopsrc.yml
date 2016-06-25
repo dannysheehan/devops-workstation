@@ -18,8 +18,12 @@
 # umask 0077
 mkdir -p ~/.backups ~/.tmp ~/bin
 export PROJECT_HOME=~/PROJECTS
+export WORKON_HOME=~/PROJECTS
 export EDITOR=vi
 export EC2_INI_PATH=/etc/ansible/ec2.ini 
+export PYENV_VIRTUALENV_DISABLE_PROMPT=1
+
+WEATHER="Brisbane?m"
 
 # Uncomment the following line if you don't like systemctl's auto-paging feature:
 # export SYSTEMD_PAGER=
@@ -64,7 +68,7 @@ get_sha() { git rev-parse --short HEAD 2>/dev/null; }
 
 encrypt() { gpg -ac --no-options "$1"; }
 decrypt() { gpg --no-options "$1"; }
-weather() { curl "http://wttr.in/$1"; }
+weather() { curl "http://wttr.in/${1-${WEATHER}}"; }
 
 asn()  {  whois -h asn.shadowserver.org "origin $1"; }
 
@@ -77,33 +81,62 @@ alias memhogs='ps wwaxm -o pid,stat,vsize,rss,time,command | head -10'
 alias cpuhogs='ps wwaxr -o pid,stat,%cpu,time,command | head -10'
 alias myip='dig +short myip.opendns.com @resolver1.opendns.com'
 
+# Quick way to serve files in HTTP from the local dir (be careful)
+alias webs='python -m SimpleHTTPServer'
+
+alias folders='find . -maxdepth 1 -type d -print0 | xargs -0 du -sk | sort -rn'
+
+alias logs="find /var/log -type f -exec file {} \; | grep 'text' | cut -d' ' -f1 | sed -e's/:$//g' | grep -v '[0-9]$' | xargs tail -f"
+
+alias iptl='sudo /sbin/iptables -L -n -v --line-numbers'
+
+alias hidden='ls -drt1 \.* | egrep -v "^(\.|\.\.)$"'
+
+
 # osx only
 trash()   { command mv "$@" ~/.Trash ; }
 spotlight() { mdfind "kMDItemDisplayName == '$@'wc"; }
 
 
+GPROMPT="https://github.com/git/git/raw/master/contrib/completion/git-prompt.sh"
 if [ -s /usr/share/git-core/contrib/completion/git-prompt.sh ];then
   source /usr/share/git-core/contrib/completion/git-prompt.sh
 elif [ -s /usr/lib/git-core/git-sh-prompt ];then
   source /usr/lib/git-core/git-sh-prompt
-elif [ -s ~/bin/git-prompt.sh ];then
-  # wget https://github.com/git/git/raw/master/contrib/completion/git-prompt.sh
+elif [ -s ~/.git-prompt.sh ];then
+  source ~/.git-prompt.sh
+elif which -s wget && wget -q $GPROMPT -O ~/.git-prompt.sh
+then
   source ~/bin/git-prompt.sh
 else
   return
 fi
 
+# https://blog.shichao.io/2014/10/01/setup_virtualenvwrapper_with_pyenv_using_pyenv_virtualenvwrapper.html
+# Create a virtualenv from the system version:
+# $ mkvirtualenv env1 -p $(which python)
+# Similarly, create a virtualenv from 3.4:
+# $ mkvirtualenv env2 -p $(which python3.4)
+# #
+export PATH="$HOME/.pyenv/bin:$PATH"
+if which -s pyenv; then
+  # pyenv
+  eval "$(pyenv init -)"
+  eval "$(pyenv virtualenv-init -)"
 
-if [ -s /usr/bin/virtualenvwrapper.sh ];then
+  if pyenv commands | egrep -q "^virtualenvwrapper"; then
+    pyenv virtualenvwrapper
+  else
+    return
+  fi
+elif [ -s /usr/bin/virtualenvwrapper.sh ];then
   source /usr/bin/virtualenvwrapper.sh
 elif [ -s /usr/local/bin/virtualenvwrapper.sh ];then
   source /usr/local/bin/virtualenvwrapper.sh
-else 
-  VENV=$(which virtualenvwrapper.sh 2> /dev/null)
-  if [ -n "$VENV" ];then
-    source $VENV
-  fi
+else
+  return
 fi
+
 
 export PATH="$PATH:$HOME/.rvm/bin" 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" 
