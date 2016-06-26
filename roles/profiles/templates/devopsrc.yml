@@ -107,16 +107,10 @@ asn()  {  whois -h asn.shadowserver.org "origin $1"; }
 
 
 httpdebug () { /usr/bin/curl $@ -o /dev/null -w "dns: %{time_namelookup} connect: %{time_connect} pretransfer: %{time_pretransfer} starttransfer: %{time_starttransfer} total: %{time_total}\n" ; }
-
-
 # apt install pandoc
 # recommend: qupzilla as ultra lightweight browser
 # qupzill ./html/<file>.html
 md2html() { mkdir ./html;pandoc -f markdown -t html "$1" > ./html/${1%.*}.html; }
-
-# osx only
-trash()   { command mv "$@" ~/.Trash ; }
-spotlight() { mdfind "kMDItemDisplayName == '$@'wc"; }
 
 
 alias dreaded='ps axl | awk '\''$10 ~ /D/'\'''
@@ -141,6 +135,11 @@ alias fwrules='sudo /sbin/iptables -L -n -v --line-numbers'
 
 # show only hidden files
 alias hidden="ls -drt1 \.* | egrep -v \"^(\.|\.\.)$\""
+
+if [ "$UNAME" = Darwin ]; then
+  trash()     { command mv "$@" ~/.Trash ; }
+  spotlight() { mdfind "kMDItemDisplayName == '$@'wc"; }
+fi
 
 
 GPROMPT="https://github.com/git/git/raw/master/contrib/completion/git-prompt.sh"
@@ -190,6 +189,7 @@ export PATH=$PATH:~/.local/bin
 # pip install --user --upgrade speedtest_cli
 alias speedtest="which pip > /dev/null && pip -q show speedtest-cli && speedtest-cli --simple"
 
+alias pipup='pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs pip install -U'
 
 # Reset
 Color_Off="\[\033[0m\]"       # Text Reset
