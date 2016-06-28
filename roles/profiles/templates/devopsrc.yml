@@ -112,6 +112,9 @@ httpdebug () { /usr/bin/curl $@ -o /dev/null -w "dns: %{time_namelookup} connect
 # qupzill ./html/<file>.html
 md2html() { mkdir ./html;pandoc -f markdown -t html "$1" > ./html/${1%.*}.html; }
 
+# list files that are puppet managed
+puppetmanaged() {  sudo find /etc -type f -exec grep -li "^#.*puppet" {} +; }
+
 
 alias dreaded='ps axl | awk '\''$10 ~ /D/'\'''
 alias memhogs='ps wwaxm -o pid,stat,vsize,rss,time,command | head -10'
@@ -178,6 +181,7 @@ elif [ -s /usr/bin/virtualenvwrapper.sh ];then
 elif [ -s /usr/local/bin/virtualenvwrapper.sh ];then
   source /usr/local/bin/virtualenvwrapper.sh
 else
+  # SUGGEST: install python-pip then sudo -i pip install virtualenv virtualenvwrapper
   return
 fi
 
