@@ -121,6 +121,14 @@ alias memhogs='ps wwaxm -o pid,stat,vsize,rss,time,command | head -10'
 alias cpuhogs='ps wwaxr -o pid,stat,%cpu,time,command | head -10'
 alias myip='dig +short myip.opendns.com @resolver1.opendns.com'
 
+# processes with biggest open files
+openfiles() { sudo lsof -s | awk '$5 == "REG"' | sort -n -r -k 7,7 | head -n 50; }
+
+# processes with most open files
+mostfiles() { sudo sudo lsof | awk '$5 == "REG" {freq[$2]++ ; names[$2] = $1 ;} END {for (pid in freq) print freq[pid], names[pid], pid ; }' | sort -n -r -k 1,1; }
+
+
+
 # get web server headers #
 alias header='curl -I'
 
