@@ -86,10 +86,12 @@ uncomment() { egrep -v '^[[:space:]]*$|^ *#' "$1"; }
 
 get_sha() { git rev-parse --short HEAD 2>/dev/null; }
 
+update()  { git pull --rebase "$1";git submodule update --init --recursive "$1"; }
+
 encrypt() { gpg -ac --no-options "$1"; }
 decrypt() { gpg --no-options "$1"; }
 weather() { curl "http://wttr.in/${1-${WEATHER}}"; }
-asn()     {  whois -h asn.shadowserver.org "origin $1"; }
+asn()     { whois -h asn.shadowserver.org "origin $1"; }
 
 
 httpdebug () { /usr/bin/curl $@ -o /dev/null -w "dns: %{time_namelookup} connect: %{time_connect} pretransfer: %{time_pretransfer} starttransfer: %{time_starttransfer} total: %{time_total}\n" ; }
