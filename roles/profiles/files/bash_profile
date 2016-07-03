@@ -1,0 +1,7 @@
+# ~/.bash_profile:
+# the default umask is set in /etc/profile; for setting the umask
+# umask 022
+
+if [ -f "$HOME/.bashrc" ]; then
+  . "$HOME/.bashrc"
+fi

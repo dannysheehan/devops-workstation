@@ -18,13 +18,14 @@
 # umask 0077
 mkdir -p ~/.backups ~/.tmp ~/.local/bin
 
+export EDITOR=vi
 export PROJECT_HOME=~/PROJECTS
 export WORKON_HOME=~/.virtualenvs
 
-export EDITOR=vi
+export PYENV_VERSION="2.7.12"
+export PYENV_VIRTUALENV_DISABLE_PROMPT=1
 
 export EC2_INI_PATH=/etc/ansible/ec2.ini 
-export PYENV_VIRTUALENV_DISABLE_PROMPT=1
 
 WEATHER="Brisbane?m"
 
@@ -67,20 +68,6 @@ alias path='echo -e ${PATH//:/\\n}'
 alias nowtime='date +"%T"'
 alias nowdate='date +"%Y%m%d"'
 
-# do not delete / or prompt if deleting more than 3 files at a time #
-alias rm='rm -I --preserve-root'
-
-# confirm
-alias mv='mv -i'
-alias cp='cp -i'
-alias ln='ln -i'
-
-# prevent changing perms on /
-alias chown='chown --preserve-root'
-alias chmod='chmod --preserve-root'
-alias chgrp='chgrp --preserve-root'
-
-
 # get GPU ram on desktop 
 alias gpumeminfo='grep -i --color memory /var/log/Xorg.0.log'
 
@@ -102,15 +89,14 @@ get_sha() { git rev-parse --short HEAD 2>/dev/null; }
 encrypt() { gpg -ac --no-options "$1"; }
 decrypt() { gpg --no-options "$1"; }
 weather() { curl "http://wttr.in/${1-${WEATHER}}"; }
-
-asn()  {  whois -h asn.shadowserver.org "origin $1"; }
+asn()     {  whois -h asn.shadowserver.org "origin $1"; }
 
 
 httpdebug () { /usr/bin/curl $@ -o /dev/null -w "dns: %{time_namelookup} connect: %{time_connect} pretransfer: %{time_pretransfer} starttransfer: %{time_starttransfer} total: %{time_total}\n" ; }
+
 # apt install pandoc
-# recommend: qupzilla as ultra lightweight browser
-# qupzill ./html/<file>.html
 md2html() { mkdir ./html;pandoc -f markdown -t html "$1" > ./html/${1%.*}.html; }
+# recommend: qupzilla as lightweight browser qupzill ./html/<file>.html
 
 # list files that are puppet managed
 puppetmanaged() {  sudo find /etc -type f -exec grep -li "^#.*puppet" {} +; }
@@ -122,10 +108,10 @@ alias cpuhogs='ps wwaxr -o pid,stat,%cpu,time,command | head -10'
 alias myip='dig +short myip.opendns.com @resolver1.opendns.com'
 
 # processes with biggest open files
-openfiles() { sudo lsof -s | awk '$5 == "REG"' | sort -n -r -k 7,7 | head -n 50; }
+fopenmemhogs() { sudo lsof -s | awk '$5 == "REG"' | sort -n -r -k 7,7 | head -n 50; }
 
 # processes with most open files
-mostfiles() { sudo sudo lsof | awk '$5 == "REG" {freq[$2]++ ; names[$2] = $1 ;} END {for (pid in freq) print freq[pid], names[pid], pid ; }' | sort -n -r -k 1,1; }
+fopencounthogs() { sudo sudo lsof | awk '$5 == "REG" {freq[$2]++ ; names[$2] = $1 ;} END {for (pid in freq) print freq[pid], names[pid], pid ; }' | sort -n -r -k 1,1; }
 
 
 
@@ -169,12 +155,12 @@ fi
 
 # https://blog.shichao.io/2014/10/01/setup_virtualenvwrapper_with_pyenv_using_pyenv_virtualenvwrapper.html
 # Create a virtualenv from the system version:
-# $ mkvirtualenv env1 -p $(which python)
+# $   mkvirtualenv env1 -p $(which python)
 # Similarly, create a virtualenv from 3.4:
-# $ mkvirtualenv env2 -p $(which python3.4)
+# $   mkvirtualenv env2 -p $(which python3.4)
 # #
 export PATH="$HOME/.pyenv/bin:$PATH"
-if which pyenv > /dev/null; then
+if which pyenv > /dev/null 2>&1; then
   # pyenv
   eval "$(pyenv init -)"
   eval "$(pyenv virtualenv-init -)"
