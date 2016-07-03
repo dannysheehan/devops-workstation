@@ -1,5 +1,6 @@
 set nohlsearch
 set nonumber
+set autowrite     " Automatically :write before running commands
 
 " toggle line numbering with Ctrl + N
 nmap <C-N> : set invnumber<CR>
@@ -24,11 +25,18 @@ else
   set smartindent
 endif
 
+" Make it obvious where 80 characters is
+set textwidth=80
+set colorcolumn=+1
+
 
 set tabstop=4
 set shiftwidth=4
 set softtabstop=4
 set expandtab
+
+" Display extra whitespace
+" set list listchars=tab:»·,trail:·,nbsp:·
 
 " Ignore compiled files
 set wildignore=*.o,*~,*.pyc
@@ -41,3 +49,8 @@ set directory=~/.tmp
 set backupdir=~/.tmp
 set undodir=~/.tmp
 
+set showmode
+nnoremap <F2> :set invpaste paste?<CR>
+nnoremap <F3> :set invnumber number?<CR>
+nnoremap <F4> :set invlist list?<CR>
+nnoremap <F5> :set invspell spell?<CR>
