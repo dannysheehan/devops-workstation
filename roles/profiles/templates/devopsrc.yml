@@ -82,7 +82,7 @@ dec2hex() { awk -v num=$1 'BEGIN { printf "%x\n", num}'; }
 mktar()   { tar cztf "${1%%/}.tar.gz" "${1%%/}/"; }
 bu()      { cp $1 ~/.backups/$(basename $1)-$(date +%Y%m%d%H%M).bk; }
 
-uncomment() { egrep -v '^[[:space:]]*$|^ *#|^dnf ' "$1"; }
+uncomment() { egrep -v '^[[:space:]]*$|^ *#|^dnl ' "$1"; }
 
 get_sha() { git rev-parse --short HEAD 2>/dev/null; }
 
