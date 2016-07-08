@@ -81,9 +81,7 @@ hex2dec() { echo $((16#$1)); }
 dec2hex() { awk -v num=$1 'BEGIN { printf "%x\n", num}'; }
 mktar()   { tar cztf "${1%%/}.tar.gz" "${1%%/}/"; }
 bu()      { cp $1 ~/.backups/$(basename $1)-$(date +%Y%m%d%H%M).bk; }
-
-uncomment() { egrep -v '^[[:space:]]*$|^ *#|^dnl ' "$1"; }
-
+nocomment() { egrep -v '^[[:space:]]*$|^ *#|^dnl ' "$1"; } 
 get_sha() { git rev-parse --short HEAD 2>/dev/null; }
 
 update()  { git pull --rebase "$1";git submodule update --init --recursive "$1"; }
@@ -92,6 +90,13 @@ encrypt() { gpg -ac --no-options "$1"; }
 decrypt() { gpg --no-options "$1"; }
 weather() { curl "http://wttr.in/${1-${WEATHER}}"; }
 asn()     { whois -h asn.shadowserver.org "origin $1"; }
+
+defang()    { sed -e "s/http/hXXp/g" -e "s/\./\[.\]/g" "$1"; }   
+refang()    { sed -e "s/hXXp/http/g" -e "s/\[.\]/\./g" "$1"; }
+
+listips()   { grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}" "$1"; }
+listurls()  { grep -oP 'http.?://\S+' "$1"; }
+listhrefs() { lynx -dump -listonly "$1"; }
 
 
 httpdebug () { /usr/bin/curl $@ -o /dev/null -w "dns: %{time_namelookup} connect: %{time_connect} pretransfer: %{time_pretransfer} starttransfer: %{time_starttransfer} total: %{time_total}\n" ; }
@@ -102,6 +107,14 @@ md2html() { mkdir ./html;pandoc -f markdown -t html "$1" > ./html/${1%.*}.html; 
 
 # list files that are puppet managed
 puppetmanaged() {  sudo find /etc -type f -exec grep -li "^#.*puppet" {} +; }
+
+# Get name of app that created a corefile.
+function corename()   
+{
+    for file ; do
+        echo -n $file : ; gdb --core=$file --batch | head -1
+    done
+}
 
 
 alias dreaded='ps axl | awk '\''$10 ~ /D/'\'''
