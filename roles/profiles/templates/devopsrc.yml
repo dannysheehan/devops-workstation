@@ -98,6 +98,8 @@ listips()   { grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}" "$1"; }
 listurls()  { grep -oP 'http.?://\S+' "$1"; }
 listhrefs() { lynx -dump -listonly "$1"; }
 
+cyber()     { lynx --dump "$1" | grep -io -w cyber | wc -w; }
+
 
 httpdebug () { /usr/bin/curl $@ -o /dev/null -w "dns: %{time_namelookup} connect: %{time_connect} pretransfer: %{time_pretransfer} starttransfer: %{time_starttransfer} total: %{time_total}\n" ; }
 
@@ -126,7 +128,7 @@ alias myip='dig +short myip.opendns.com @resolver1.opendns.com'
 fopenmemhogs() { sudo lsof -s | awk '$5 == "REG"' | sort -n -r -k 7,7 | head -n 50; }
 
 # processes with most open files
-fopencounthogs() { sudo sudo lsof | awk '$5 == "REG" {freq[$2]++ ; names[$2] = $1 ;} END {for (pid in freq) print freq[pid], names[pid], pid ; }' | sort -n -r -k 1,1; }
+fopencounthogs() { sudo lsof | awk '$5 == "REG" {freq[$2]++ ; names[$2] = $1 ;} END {for (pid in freq) print freq[pid], names[pid], pid ; }' | sort -n -r -k 1,1; }
 
 
 
