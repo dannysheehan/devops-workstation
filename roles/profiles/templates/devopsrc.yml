@@ -95,10 +95,18 @@ defang()    { sed -e "s/http/hXXp/g" -e "s/\./\[.\]/g" "$1"; }
 refang()    { sed -e "s/hXXp/http/g" -e "s/\[.\]/\./g" "$1"; }
 
 listips()   { grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}" "$1"; }
+
+
+
+# list proxies listed in a file
+listproxies()   { grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}:[0-9]{1,4}" "$1"; }
+
 listurls()  { grep -oP 'http.?://\S+' "$1"; }
 listhrefs() { lynx -dump -listonly "$1"; }
 
 cyber()     { lynx --dump "$1" | grep -io -w cyber | wc -w; }
+
+proxyok()   { export http_proxy="$1" && echo "Your IP address is:"; lynx -dump http://myip.dnsdynamic.org && lynx -dump -head http://pastebin.com; }
 
 
 httpdebug () { /usr/bin/curl $@ -o /dev/null -w "dns: %{time_namelookup} connect: %{time_connect} pretransfer: %{time_pretransfer} starttransfer: %{time_starttransfer} total: %{time_total}\n" ; }
