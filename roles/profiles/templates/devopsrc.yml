@@ -86,8 +86,12 @@ get_sha() { git rev-parse --short HEAD 2>/dev/null; }
 
 update()  { git pull --rebase "$1";git submodule update --init --recursive "$1"; }
 
+# return length and type of pub/priv key
+keylen()  { ssh-keygen -lf "$1"; }
+
 encrypt() { gpg -ac --no-options "$1"; }
 decrypt() { gpg --no-options "$1"; }
+
 weather() { curl "http://wttr.in/${1-${WEATHER}}"; }
 asn()     { whois -h asn.shadowserver.org "origin $1"; }
 
@@ -111,6 +115,9 @@ proxyok()   { export http_proxy="$1" && echo "Your IP address is:"; lynx -dump h
 
 httpdebug () { /usr/bin/curl $@ -o /dev/null -w "dns: %{time_namelookup} connect: %{time_connect} pretransfer: %{time_pretransfer} starttransfer: %{time_starttransfer} total: %{time_total}\n" ; }
 
+# empty posix mail queue of specific email address
+emptymailq () { mailq | grep -v '^ *(' | awk -v USER_MAIL="$1"  'BEGIN { RS = "" } { if ($8 == USER_MAIL && $9 == "") print $1 } ' | tr -d '*!'  | postsuper -d -; }
+
 # apt install pandoc
 md2html() { mkdir ./html;pandoc -f markdown -t html "$1" > ./html/${1%.*}.html; }
 # recommend: qupzilla as lightweight browser qupzill ./html/<file>.html
@@ -127,10 +134,23 @@ function corename()
 }
 
 
+alias meminfo='egrep "Mem|Cache|Swap" /proc/meminfo'
+
+myusb () { usb_array=();while read -r -d $'\n'; do usb_array+=("$REPLY"); done < <(find /dev/disk/by-path/ -type l -iname \*usb\*scsi\* -not -iname \*usb\*scsi\*part* -print0 | xargs -0 -iD readlink -f D | cut -c 8) && for usb in "${usb_array[@]}"; do echo "USB drive assigned to sd$usb"; done; }
+
+
+
 alias dreaded='ps axl | awk '\''$10 ~ /D/'\'''
 alias memhogs='ps wwaxm -o pid,stat,vsize,rss,time,command | head -10'
 alias cpuhogs='ps wwaxr -o pid,stat,%cpu,time,command | head -10'
-alias myip='dig +short myip.opendns.com @resolver1.opendns.com'
+
+alias myinetip='dig +short myip.opendns.com @resolver1.opendns.com'
+alias myproxip='curl https://api.ipify.org;echo'
+
+alias bigfiles="find . -type f 2>/dev/null | xargs du -a 2>/dev/null | awk '{ if ( \$1 > 100000) print \$0 }'"
+
+# ping router
+alias pr="ping \`netstat -nr| grep -m 1 -iE 'default|0.0.0.0' | awk '{print \$2}'\`"
 
 # processes with biggest open files
 fopenmemhogs() { sudo lsof -s | awk '$5 == "REG"' | sort -n -r -k 7,7 | head -n 50; }
@@ -151,6 +171,8 @@ alias webs='python -m SimpleHTTPServer'
 
 # tail all logs
 alias logs="find /var/log -type f -exec file {} \; | grep 'text' | cut -d' ' -f1 | sed -e's/:$//g' | grep -v '[0-9]$' | xargs tail -f"
+
+
 
 # show fwrules
 alias fwrules='sudo /sbin/iptables -L -n -v --line-numbers'
