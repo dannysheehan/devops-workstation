@@ -59,7 +59,7 @@ set_titlebar() {
 # install  colordiff package :)
 alias cdiff='colordiff'
 
-alias mount='mount |column -t'
+alias mountls='mount |column -t'
 
 alias h='history'
 alias j='jobs -l'
@@ -124,6 +124,13 @@ md2html() { mkdir ./html;pandoc -f markdown -t html "$1" > ./html/${1%.*}.html; 
 
 # list files that are puppet managed
 puppetmanaged() {  sudo find /etc -type f -exec grep -li "^#.*puppet" {} +; }
+
+
+# get details of switch i am connected to (assumes CISCO)
+
+myswitch()  { sudo tcpdump -nn -v -i "$1" -s 1500 -c 1 'ether[20:2] == 0x2000'; }
+
+
 
 # Get name of app that created a corefile.
 function corename()   
