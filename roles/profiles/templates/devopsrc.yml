@@ -81,6 +81,7 @@ hex2dec() { echo $((16#$1)); }
 dec2hex() { awk -v num=$1 'BEGIN { printf "%x\n", num}'; }
 mktar()   { tar cztf "${1%%/}.tar.gz" "${1%%/}/"; }
 bu()      { cp $1 ~/.backups/$(basename $1)-$(date +%Y%m%d%H%M).bk; }
+sudobu()  { sudo cp $1 $1.$(date +%Y%m%d-%H%M); }
 nocomment() { egrep -v '^[[:space:]]*$|^ *#|^dnl ' "$1"; } 
 get_sha() { git rev-parse --short HEAD 2>/dev/null; }
 
@@ -108,6 +109,7 @@ listproxies()   { grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}:[0-9]{1,4}" "$1"; }
 listurls()  { grep -oP 'http.?://\S+' "$1"; }
 listhrefs() { lynx -dump -listonly "$1"; }
 
+# count the number of times the word cyber appears in a web url
 cyber()     { lynx --dump "$1" | grep -io -w cyber | wc -w; }
 
 proxyok()   { export http_proxy="$1" && echo "Your IP address is:"; lynx -dump http://myip.dnsdynamic.org && lynx -dump -head http://pastebin.com; }
@@ -119,18 +121,19 @@ httpdebug () { /usr/bin/curl $@ -o /dev/null -w "dns: %{time_namelookup} connect
 emptymailq () { mailq | grep -v '^ *(' | awk -v USER_MAIL="$1"  'BEGIN { RS = "" } { if ($8 == USER_MAIL && $9 == "") print $1 } ' | tr -d '*!'  | postsuper -d -; }
 
 # apt install pandoc
-md2html() { mkdir ./html;pandoc -f markdown -t html "$1" > ./html/${1%.*}.html; }
+md2html () { mkdir ./html;pandoc -f markdown -t html "$1" > ./html/${1%.*}.html; }
 # recommend: qupzilla as lightweight browser qupzill ./html/<file>.html
 
 # list files that are puppet managed
-puppetmanaged() {  sudo find /etc -type f -exec grep -li "^#.*puppet" {} +; }
+puppetmanaged () {  sudo find /etc -type f -exec grep -li "^#.*puppet" {} +; }
+ansiblemanaged () {  sudo find /etc -type f -exec grep -li "^#.*ansible" {} +; }
 
 
 # get details of switch i am connected to (assumes CISCO)
+myswitch ()  { sudo tcpdump -nn -v -i "$1" -s 1500 -c 1 'ether[20:2] == 0x2000'; }
 
-myswitch()  { sudo tcpdump -nn -v -i "$1" -s 1500 -c 1 'ether[20:2] == 0x2000'; }
-
-
+# check when ssl cert expires
+sslexpire () { openssl x509 -enddate -noout -in "$1"; }
 
 # Get name of app that created a corefile.
 function corename()   
