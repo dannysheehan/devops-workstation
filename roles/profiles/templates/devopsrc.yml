@@ -27,6 +27,8 @@ export PYENV_VIRTUALENV_DISABLE_PROMPT=1
 
 export EC2_INI_PATH=/etc/ansible/ec2.ini 
 
+export ANSIBLE_VAULT_PASSWORD_FILE=~/.ssh/.vault_pass.txt
+
 WEATHER="Brisbane?m"
 
 # Uncomment the following line if you don't like systemctl's auto-paging feature:
