@@ -95,6 +95,9 @@ keylen()  { ssh-keygen -lf "$1"; }
 encrypt() { gpg -ac --no-options "$1"; }
 decrypt() { gpg --no-options "$1"; }
 
+# turn off password aging for user
+pwdageoff() { sudo chage -I -1 -m 0 -M 99999 -E -1 "$1"; chage -l "$1"; }
+
 weather() { curl "http://wttr.in/${1-${WEATHER}}"; }
 asn()     { whois -h asn.shadowserver.org "origin $1"; }
 
