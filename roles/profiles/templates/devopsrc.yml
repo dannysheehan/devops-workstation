@@ -144,13 +144,22 @@ myswitch ()  { sudo tcpdump -nn -v -i "$1" -s 1500 -c 1 'ether[20:2] == 0x2000';
 sslexpire () { openssl x509 -enddate -noout -in "$1"; }
 
 # Get name of app that created a corefile.
-function corename()   
+corename()   
 {
     for file ; do
         echo -n $file : ; gdb --core=$file --batch | head -1
     done
 }
 
+# https://blog.baloneygeek.com/posts/2016/08/19/random-password-one-liners.html
+genpasswd () {
+    local RPASSWD=$(dd if=/dev/urandom bs=$1 count=1 2> /dev/null | base64 -w0)
+    if [[ $2 = "-n" ]]; then
+        echo $RPASSWD | tr -cd "[[:alnum:]]"
+    else
+        echo $RPASSWD
+    fi
+}
 
 alias meminfo='egrep "Mem|Cache|Swap" /proc/meminfo'
 
