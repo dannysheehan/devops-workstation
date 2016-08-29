@@ -101,6 +101,9 @@ pwdageoff() { sudo chage -I -1 -m 0 -M 99999 -E -1 "$1"; chage -l "$1"; }
 # handle tty permissioning for screen when su'ing to another use
 screenas() { OOWN=$(stat -c '%U' $(tty)) && chown "$1" $(tty) && su - "$1" -c screen && chown $OOWN $(tty); }
 
+# convert nagios log to readable timestamp
+nagioslog() { cat "$1" | perl -pe 's/(\d+)/localtime($1)/e'; }
+
 weather() { curl "http://wttr.in/${1-${WEATHER}}"; }
 asn()     { whois -h asn.shadowserver.org "origin $1"; }
 
