@@ -1,5 +1,8 @@
+#
 # ==============================================================================
 # Don't display the copyright page
+# {{ ansible_managed }}
+#
 startup_message off
 
 # No annoying audible bell, using "visual bell"
@@ -23,7 +26,10 @@ hardstatus string '%{= kG}[ %{G}%H %{g}][%= %{= kw}%?%-Lw%?%{r}(%{W}%n*%f%t%?(%u
 
 # STARTUP SCREENS
 # ===============================================================
-screen -t netstat   0 sudo watch -n4 'netstat -punt'
-screen -t lsof      1 sudo watch -n3 'lsof -P -i -n'
-screen -t top       2 top
-screen -t bash      3
+#screen -t netstat   0 sudo watch -n4 'netstat -punt'
+#screen -t lsof      1 sudo watch -n3 'lsof -P -i -n'
+#screen -t bash      2
+screen -t bash      0
+{% for startup in screen.startups %}
+screen -t {{ startup }}
+{% endfor %}
