@@ -76,6 +76,8 @@ alias gpumeminfo='grep -i --color memory /var/log/Xorg.0.log'
 # always resume/continue partial downloads.
 alias wget='wget -c'
 
+# find directories with highest inode usage
+dinodes() { du --inodes -S "$1" | sort -rh | sed -n  '1,50{/^.\{71\}/s/^\(.\{30\}\).*\(.\{37\}\)$/\1...\2/;p}'; }
 
 mkcd()    { mkdir "$1" && cd "$1"; }
 calc()    { awk "BEGIN{ print $* }" ;}
