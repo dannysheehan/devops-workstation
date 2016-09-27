@@ -76,6 +76,9 @@ alias gpumeminfo='grep -i --color memory /var/log/Xorg.0.log'
 # always resume/continue partial downloads.
 alias wget='wget -c'
 
+
+adkeys () { sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$1";}
+
 # find directories with highest inode usage
 dinodes() { du --inodes -S "$1" | sort -rh | sed -n  '1,50{/^.\{71\}/s/^\(.\{30\}\).*\(.\{37\}\)$/\1...\2/;p}'; }
 
@@ -109,8 +112,11 @@ nagioslog() { cat "$1" | perl -pe 's/(\d+)/localtime($1)/e'; }
 weather() { curl "http://wttr.in/${1-${WEATHER}}"; }
 asn()     { whois -h asn.shadowserver.org "origin $1"; }
 
-defang()    { sed -e "s/http/hXXp/g" -e "s/\./\[.\]/g" "$1"; }   
-refang()    { sed -e "s/hXXp/http/g" -e "s/\[.\]/\./g" "$1"; }
+defangf()    { sed -e "s/http/hXXp/g" -e "s/\./\[.\]/g" "$1"; }   
+refangf()    { sed -e "s/hXXp/http/g" -e "s/\[.\]/\./g" "$1"; }
+
+defang()    { echo "$1" | sed -e "s/http/hXXp/g" -e "s/\./\[.\]/g"; }   
+refang()    { echo "$1" | sed -e "s/hXXp/http/g" -e "s/\[.\]/\./g"; }
 
 listips()   { grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}" "$1"; }
 
