@@ -136,7 +136,7 @@ listhrefs() { lynx -dump -listonly "$1"; }
 cyber()     { lynx --dump "$1" | grep -io -w cyber | wc -w; }
 
 emailipleak() { lynx --dump http://emailipleak.com/ | grep "You are"; }
-ipv6leak(   { lynx --dump http://ipv6leak.com/ | grep "You are"; }
+ipv6leak()  { lynx --dump http://ipv6leak.com/ | grep "You are"; }
 dnsleak()   { lynx --dump http://dnsleak.com/ | grep "You are"; }
 
 
