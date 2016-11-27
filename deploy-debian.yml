@@ -1,0 +1,50 @@
+---
+
+- name: Debian | repository - add the GPG key
+  apt_key:
+    url: '{{ item }}'
+    state: present
+  with_items: []
+
+- name: Debian | add extra repositories
+  apt_repository:
+    repo: '{{ item }}'
+    update_cache: yes
+  with_items: 
+    - ppa:jtaylor/keepass
+    - ppa:dlech/keepass2-plugins
+
+- name: Debian | uninstall packages
+  apt:
+    pkg: '{{ item }}'
+    state: absent
+    update_cache: yes
+    cache_valid_time: 3600
+  with_items: 
+    - ufw
+
+- name: Debian | install base packages
+  apt:
+    pkg: '{{ item }}'
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  with_items: 
+    - git
+    - ansible
+    - python-pip
+    - firewall-applet
+    - network-manager-openconnect-gnome
+
+- name: Debian | install user packages
+  apt:
+    pkg: '{{ item }}'
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  with_items: 
+    - keypassx
+    - hexchat
+    - gobby
+    - virt-viewer
+    - virt-manager

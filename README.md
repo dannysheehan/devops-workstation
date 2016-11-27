@@ -10,6 +10,15 @@ easily push out profiles to the servers you manage.
 - .screenrc settings (specific to each host -todo )
 - .ssh/config  - todo
 
+## bootstrap
+
+```
+$ apt install ansible git
+$ git config --global user.name "User Name" $ git config --global core.editor "vi"
+$ git config --global user.email user@email.com
+```
+
+
 ## .bashrc
 
 - Configures bash prompt to include
