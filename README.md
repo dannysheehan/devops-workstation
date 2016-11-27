@@ -16,8 +16,8 @@ easily push out profiles to the servers you manage.
 $ apt install ansible git
 $ git config --global user.name "User Name" $ git config --global core.editor "vi"
 $ git config --global user.email user@email.com
+$ echo 'localhost ansible_host=127.0.0.1 ansible_connection=local' >> /etc/ansible/hosts
 ```
-
 
 ## .bashrc
 

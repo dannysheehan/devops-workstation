@@ -1,18 +1,17 @@
 ---
 
-- name: Debian | repository - add the GPG key
+- name: Debian | repository - add oracle GPG key
   apt_key:
-    url: '{{ item }}'
+    url: 'https://www.virtualbox.org/download/oracle_vbox_2016.asc'
     state: present
-  with_items: []
 
-- name: Debian | add extra repositories
+- name: Debian | add keypass repo.
   apt_repository:
-    repo: '{{ item }}'
-    update_cache: yes
-  with_items: 
-    - ppa:jtaylor/keepass
-    - ppa:dlech/keepass2-plugins
+    repo: 'ppa:jtaylor/keepass'
+
+- name: Debian | add keepass plugins repo.
+  apt_repository:
+    repo: 'ppa:dlech/keepass2-plugins'
 
 - name: Debian | uninstall packages
   apt:
@@ -33,8 +32,25 @@
     - git
     - ansible
     - python-pip
+    - python-dev
+    - build-essential
     - firewall-applet
     - network-manager-openconnect-gnome
+    - keepass2
+    - keepass2-plugin-keeagent
+    - libpam-google-authenticator
+
+
+- name: Debian | install virtualenv
+  pip:
+    name: virtualenv
+    state: latest
+
+- name: Debian | install virtualenvwrapper
+  pip:
+    name: virtualenvwrapper
+    state: latest
+
 
 - name: Debian | install user packages
   apt:
@@ -43,8 +59,29 @@
     update_cache: yes
     cache_valid_time: 3600
   with_items: 
-    - keypassx
     - hexchat
     - gobby
     - virt-viewer
     - virt-manager
+    - terminator
+    - tcpdump
+    - lynx
+    - whois
+    - nmap
+    - pandoc
+    - evolution
+    - evolution-ews
+    - seahorse-nautilus
+    - seahorse-sharing
+    - virtualbox
+    - virtualbox-ext-pack
+
+- name: Debian | install yubi packages
+  apt:
+    pkg: '{{ item }}'
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  with_items: 
+    - yubioath-desktop
+    - yubikey-personalization-gui
