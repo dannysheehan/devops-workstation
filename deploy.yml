@@ -4,7 +4,7 @@
   roles:
     - profiles
 
-- hosts: all
+- hosts: localhost
 
   tasks:
     - include: deploy-debian.yml
