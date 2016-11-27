@@ -135,6 +135,11 @@ listhrefs() { lynx -dump -listonly "$1"; }
 # count the number of times the word cyber appears in a web url
 cyber()     { lynx --dump "$1" | grep -io -w cyber | wc -w; }
 
+emailipleak() { lynx --dump http://emailipleak.com/ | grep "You are"; }
+ipv6leak()  { lynx --dump http://ipv6leak.com/ | grep "You are"; }
+dnsleak()   { lynx --dump http://dnsleak.com/ | grep "You are"; }
+
+
 proxyok()   { export http_proxy="$1" && echo "Your IP address is:"; lynx -dump http://myip.dnsdynamic.org && lynx -dump -head http://pastebin.com; }
 
 
@@ -157,6 +162,9 @@ myswitch ()  { sudo tcpdump -nn -v -i "$1" -s 1500 -c 1 'ether[20:2] == 0x2000';
 
 # check when ssl cert expires
 sslexpire () { openssl x509 -enddate -noout -in "$1"; }
+
+siteexpire () { echo | openssl s_client -connect $1:443  2>/dev/null | openssl x509 -noout -dates | grep After; }
+
 
 # Get name of app that created a corefile.
 corename()   
