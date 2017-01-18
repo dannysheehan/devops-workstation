@@ -71,10 +71,13 @@
     - pandoc
     - evolution
     - evolution-ews
+    - evolution-indicator
     - seahorse-nautilus
     - seahorse-sharing
     - virtualbox
     - virtualbox-ext-pack
+    - icedtea-netx
+    # mail-notification-evolution -- remove thunderbird
 
 - name: Debian | install yubi packages
   apt:
@@ -85,3 +88,9 @@
   with_items: 
     - yubioath-desktop
     - yubikey-personalization-gui
+
+
+
+# 
+# stop monitor from going to sleep
+## Things have changed since this post was submitted. Go to System Settings in the top right corner of your screen, select Brightness and Lock and set "turn screen off when inactive" to never
