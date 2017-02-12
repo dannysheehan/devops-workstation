@@ -1,0 +1,96 @@
+---
+
+- name: Debian | repository - add oracle GPG key
+  apt_key:
+    url: 'https://www.virtualbox.org/download/oracle_vbox_2016.asc'
+    state: present
+
+- name: Debian | add keypass repo.
+  apt_repository:
+    repo: 'ppa:jtaylor/keepass'
+
+- name: Debian | add keepass plugins repo.
+  apt_repository:
+    repo: 'ppa:dlech/keepass2-plugins'
+
+- name: Debian | uninstall packages
+  apt:
+    pkg: '{{ item }}'
+    state: absent
+    update_cache: yes
+    cache_valid_time: 3600
+  with_items: 
+    - ufw
+
+- name: Debian | install base packages
+  apt:
+    pkg: '{{ item }}'
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  with_items: 
+    - git
+    - ansible
+    - python-pip
+    - python-dev
+    - build-essential
+    - firewall-applet
+    - network-manager-openconnect-gnome
+    - keepass2
+    - keepass2-plugin-keeagent
+    - libpam-google-authenticator
+
+
+- name: Debian | install virtualenv
+  pip:
+    name: virtualenv
+    state: latest
+
+- name: Debian | install virtualenvwrapper
+  pip:
+    name: virtualenvwrapper
+    state: latest
+
+
+- name: Debian | install user packages
+  apt:
+    pkg: '{{ item }}'
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  with_items: 
+    - hexchat
+    - gobby
+    - virt-viewer
+    - virt-manager
+    - terminator
+    - tcpdump
+    - lynx
+    - whois
+    - nmap
+    - pandoc
+    - evolution
+    - evolution-ews
+    - evolution-indicator
+    - seahorse-nautilus
+    - seahorse-sharing
+    - virtualbox
+    - virtualbox-ext-pack
+    - icedtea-netx
+    # mail-notification-evolution -- remove thunderbird
+
+- name: Debian | install yubi packages
+  apt:
+    pkg: '{{ item }}'
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  with_items: 
+    - yubioath-desktop
+    - yubikey-personalization-gui
+
+
+
+# 
+# stop monitor from going to sleep
+## Things have changed since this post was submitted. Go to System Settings in the top right corner of your screen, select Brightness and Lock and set "turn screen off when inactive" to never

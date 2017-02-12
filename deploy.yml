@@ -1,6 +1,15 @@
 ---
 
 - hosts: all
-  
   roles:
     - profiles
+
+- hosts: localhost
+
+  tasks:
+    - include: deploy-debian.yml
+      become: yes
+      become_method: sudo
+      when: ansible_os_family == 'Debian'
+      tags: package
+
