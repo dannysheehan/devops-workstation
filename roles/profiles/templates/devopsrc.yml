@@ -63,6 +63,8 @@ alias cdiff='colordiff'
 
 alias mountls='mount |column -t'
 
+alias clearhistory='cat /dev/null > ~/.bash_history && history -c && exit'
+
 alias h='history'
 alias j='jobs -l'
 
