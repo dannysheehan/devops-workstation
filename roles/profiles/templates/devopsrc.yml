@@ -61,6 +61,8 @@ set_titlebar() {
 # install  colordiff package :)
 alias cdiff='colordiff'
 
+alias openfile='xdg-open'
+
 alias mountls='mount |column -t'
 
 alias clearhistory='cat /dev/null > ~/.bash_history && history -c && exit'
