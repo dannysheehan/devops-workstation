@@ -34,6 +34,8 @@ WEATHER="Brisbane?m"
 # Uncomment the following line if you don't like systemctl's auto-paging feature:
 # export SYSTEMD_PAGER=
 
+{% raw %}
+
 # guard to avoid breaking scp and sftp if output is displayed.
 # [[ $- == *i* ]] || return 0
 #
@@ -81,7 +83,7 @@ alias gpumeminfo='grep -i --color memory /var/log/Xorg.0.log'
 alias wget='wget -c'
 
 
-adkeys () { sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$1";}
+addkey () { sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$1";}
 
 # find directories with highest inode usage
 dinodes() { du --inodes -S "$1" | sort -rh | sed -n  '1,50{/^.\{71\}/s/^\(.\{30\}\).*\(.\{37\}\)$/\1...\2/;p}'; }
@@ -109,6 +111,7 @@ pwdageoff() { sudo chage -I -1 -m 0 -M 99999 -E -1 "$1"; chage -l "$1"; }
 
 # handle tty permissioning for screen when su'ing to another use
 screenas() { OOWN=$(stat -c '%U' $(tty)) && chown "$1" $(tty) && su - "$1" -c screen && chown $OOWN $(tty); }
+
 # allow su users to takeover screen
 sscreen() { /usr/bin/script -q -c "/usr/bin/screen ${*}" /dev/null; } 
 
@@ -146,8 +149,6 @@ listips()   { grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}" "$1"; }
 
 listemails() { grep -E -o "\b[a-zA-Z0-9.-]+@[a-zA-Z0-9.-]+\.[a-zA-Z0-9.-]+\b" "$1"; }
 
-
-
 # list proxies listed in a file
 listproxies()   { grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}:[0-9]{1,4}" "$1"; }
 
@@ -156,16 +157,11 @@ checktor()  { lynx --dump https://check.torproject.org | egrep "^Sorry\.|^Congra
 listurls()  { grep -oP 'http.?://\S+' "$1"; }
 listhrefs() { lynx -dump -listonly "$1"; }
 
-# count the number of times the word cyber appears in a web url
-cyber()     { lynx --dump "$1" | grep -io -w cyber | wc -w; }
-
 emailipleak() { lynx --dump http://emailipleak.com/ | grep "You are"; }
 ipv6leak()  { lynx --dump http://ipv6leak.com/ | grep "You are"; }
 dnsleak()   { lynx --dump http://dnsleak.com/ | grep "You are"; }
 
-
 proxyok()   { export http_proxy="$1" && echo "Your IP address is:"; lynx -dump http://myip.dnsdynamic.org && lynx -dump -head http://pastebin.com; }
-
 
 httpdebug () { /usr/bin/curl $@ -o /dev/null -w "dns: %{time_namelookup} connect: %{time_connect} pretransfer: %{time_pretransfer} starttransfer: %{time_starttransfer} total: %{time_total}\n" ; }
 
@@ -179,7 +175,6 @@ md2html () { mkdir ./html;pandoc -f markdown -t html "$1" > ./html/${1%.*}.html;
 # list files that are puppet managed
 puppetmanaged () {  sudo find /etc -type f -exec grep -li "^#.*puppet" {} +; }
 ansiblemanaged () {  sudo find /etc -type f -exec grep -li "^#.*ansible" {} +; }
-
 
 # get details of switch i am connected to (assumes CISCO)
 myswitch ()  { sudo tcpdump -nn -v -i "$1" -s 1500 -c 1 'ether[20:2] == 0x2000'; }
@@ -216,8 +211,6 @@ alias meminfo='egrep "Mem|Cache|Swap" /proc/meminfo'
 
 myusb () { usb_array=();while read -r -d $'\n'; do usb_array+=("$REPLY"); done < <(find /dev/disk/by-path/ -type l -iname \*usb\*scsi\* -not -iname \*usb\*scsi\*part* -print0 | xargs -0 -iD readlink -f D | cut -c 8) && for usb in "${usb_array[@]}"; do echo "USB drive assigned to sd$usb"; done; }
 
-
-
 alias dreaded='ps axl | awk '\''$10 ~ /D/'\'''
 alias memhogs='ps wwaxm -o pid,stat,vsize,rss,time,command | head -10'
 alias cpuhogs='ps wwaxr -o pid,stat,%cpu,time,command | head -10'
@@ -237,8 +230,6 @@ fopenmemhogs() { sudo lsof -s | awk '$5 == "REG"' | sort -n -r -k 7,7 | head -n 
 fopencounthogs() { sudo lsof | awk '$5 == "REG" {freq[$2]++ ; names[$2] = $1 ;} END {for (pid in freq) print freq[pid], names[pid], pid ; }' | sort -n -r -k 1,1; }
 
 
-
-
 # get web server headers #
 alias header='curl -I'
 
@@ -251,9 +242,7 @@ alias webs='python -m SimpleHTTPServer'
 # tail all logs
 alias logs="find /var/log -type f -exec file {} \; | grep 'text' | cut -d' ' -f1 | sed -e's/:$//g' | grep -v '[0-9]$' | xargs tail -f"
 
-
-
-# show fwrules
+# show fwrules with line numbers
 alias fwrules='sudo /sbin/iptables -L -n -v --line-numbers'
 
 # show only hidden files
@@ -338,3 +327,5 @@ GIT_PS1_SHOWSTASHSTATE=1
 GIT_PS1_SHOWUPSTREAM="auto"
 
 PROMPT_COMMAND='__git_ps1 "[${Yellow}$(echo -e code $?)$Color_Off]\n${VIRTUAL_ENV:+[${Yellow}$(basename $VIRTUAL_ENV)$Color_Off]\n}${GEM_HOME:+[${Cyan}$(rvm-prompt i v p g)$Color_Off]\n}" "\h:\W \u\\\$ " "[%s $(get_sha)]\n";set_titlebar "$USER@${HOSTNAME%%.*} $(basename $PWD)"'
+
+{% endraw %}

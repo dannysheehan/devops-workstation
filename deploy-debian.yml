@@ -1,26 +1,71 @@
 ---
 
-- name: Debian | repository - add oracle GPG key
+- name: Ensure apt-transport-https is installed.
+  apt: name=apt-transport-https state=present
+
+- name: Debian | repository - update keyserver oracle_vbox.asc
   apt_key:
+    id: 'B0FAB3A13B907435925D9C954422A4B98AB5139'
+    url: 'https://www.virtualbox.org/download/oracle_vbox.asc'
+    state: present
+
+- name: Debian | repository - update keyserver oracle_vbox_2016.asc
+  apt_key:
+    id: 'B9F8D658297AF3EFC18D5CDFA2F683C52980AECF'
     url: 'https://www.virtualbox.org/download/oracle_vbox_2016.asc'
     state: present
 
-- name: Debian | add keypass repo.
-  apt_repository:
-    repo: 'ppa:jtaylor/keepass'
+- name: Debian | repository - update keyserver chrome
+  apt_key:
+    url: 'https://dl.google.com/linux/linux_signing_key.pub'
+    state: present
 
-- name: Debian | add keepass plugins repo.
-  apt_repository:
-    repo: 'ppa:dlech/keepass2-plugins'
+- name: Debian | repository - update keyserver insync
+  apt_key:
+    keyserver: 'keyserver.ubuntu.com'
+    id: 'ACCAF35C'
 
-- name: Debian | uninstall packages
+- name: Debian | repository - update keyserver hashicorp
+  apt_key:
+    keyserver: 'keyserver.ubuntu.com'
+    id: '51852D87348FFC4C'
+
+
+- name: Debian | Add repos 
+  apt_repository:
+    repo: "{{ item }}"
+    state: present
+  with_items:
+    - 'deb http://download.virtualbox.org/virtualbox/debian {{ ansible_distribution_release }} contrib'
+    - 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
+    - 'ppa:sebastian-stenzel/cryptomator'
+    - 'deb http://apt.insynchq.com/ubuntu {{ ansible_distribution_release }} non-free contrib'
+  register: repos 
+
+- name: Update apt cache if repo was added.
+  apt: update_cache=yes
+  when: repos.changed
+
+- name: Debian | install repo packages
   apt:
     pkg: '{{ item }}'
-    state: absent
+    state: present
     update_cache: yes
     cache_valid_time: 3600
   with_items: 
-    - ufw
+    - dkms
+    - virtualbox-5.2
+    - google-chrome-stable
+    - cryptomator
+    - insync
+
+- name: Debian | install direct debian packages
+  apt:
+    deb: '{{ item }}'
+    update_cache: yes
+    cache_valid_time: 3600
+  with_items: 
+    - '{{ vagrant_deb }}'
 
 - name: Debian | install base packages
   apt:
@@ -30,54 +75,50 @@
     cache_valid_time: 3600
   with_items: 
     - git
-    - ansible
+    - jq
+    - encfs
     - python-pip
     - python-dev
+    - python-virtualenv
     - build-essential
-    - firewall-applet
+    - libssl-dev
+    - libffi-dev
+    - libvirt-dev
+    - librsync-dev
+    - libpcsclite-dev
+    - swig
     - network-manager-openconnect-gnome
-    - keepass2
-    - keepass2-plugin-keeagent
     - libpam-google-authenticator
-
-
-- name: Debian | install virtualenv
-  pip:
-    name: virtualenv
-    state: latest
+    - gnome-shell
+    - ubuntu-gnome-desktop
 
 - name: Debian | install virtualenvwrapper
   pip:
     name: virtualenvwrapper
     state: latest
 
-
-- name: Debian | install user packages
+- name: Debian | install other user packages
   apt:
     pkg: '{{ item }}'
     state: present
     update_cache: yes
     cache_valid_time: 3600
   with_items: 
+    - chromium-browser
+    - keepassx
     - hexchat
-    - gobby
-    - virt-viewer
-    - virt-manager
     - terminator
     - tcpdump
     - lynx
     - whois
     - nmap
     - pandoc
-    - evolution
-    - evolution-ews
-    - evolution-indicator
     - seahorse-nautilus
     - seahorse-sharing
-    - virtualbox
-    - virtualbox-ext-pack
     - icedtea-netx
-    # mail-notification-evolution -- remove thunderbird
+    - virt-viewer
+    - virt-manager
+    # virtualbox-ext-pack
 
 - name: Debian | install yubi packages
   apt:
@@ -88,9 +129,3 @@
   with_items: 
     - yubioath-desktop
     - yubikey-personalization-gui
-
-
-
-# 
-# stop monitor from going to sleep
-## Things have changed since this post was submitted. Go to System Settings in the top right corner of your screen, select Brightness and Lock and set "turn screen off when inactive" to never
