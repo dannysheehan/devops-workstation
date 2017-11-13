@@ -2,14 +2,26 @@
 
 - hosts: all:localhost
   roles:
-    - profiles
+    # profiles
 
 - hosts: localhost
 
   tasks:
+
     - include_tasks: deploy-debian.yml
       become: yes
       become_method: sudo
       when: ansible_os_family == 'Debian'
       tags: package
+
+    - name: install extra user pip modules 
+      pip:
+        name: '{{ item }}'
+        executable: pip2
+        extra_args: --user
+      with_items:
+        - httpstat
+        - googler
+        - speedtest_cli
+
 

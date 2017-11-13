@@ -15,6 +15,12 @@
     url: 'https://www.virtualbox.org/download/oracle_vbox_2016.asc'
     state: present
 
+- name: Debian | repository - riot matrix im client
+  apt_key:
+    url: 'https://riot.im/packages/debian/repo-key.asc'
+    state: present
+
+
 - name: Debian | repository - update keyserver chrome
   apt_key:
     url: 'https://dl.google.com/linux/linux_signing_key.pub'
@@ -40,6 +46,7 @@
     - 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
     - 'ppa:sebastian-stenzel/cryptomator'
     - 'deb http://apt.insynchq.com/ubuntu {{ ansible_distribution_release }} non-free contrib'
+    - 'deb https://riot.im/packages/debian/ xenial main'
   register: repos 
 
 - name: Update apt cache if repo was added.
@@ -58,6 +65,7 @@
     - google-chrome-stable
     - cryptomator
     - insync
+    - riot-web
 
 - name: Debian | install direct debian packages
   apt:
@@ -91,6 +99,8 @@
     - libpam-google-authenticator
     - gnome-shell
     - ubuntu-gnome-desktop
+    - exfat-fuse
+    - exfat-utils
 
 - name: Debian | install virtualenvwrapper
   pip:
