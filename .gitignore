@@ -5,11 +5,7 @@
 .*.sw?
 *~
 *.retry
-
 /inventory/test
-/host_vars
-/group_vars
-
 # Vagrant stuff
 acceptance_config.yml
 boxes/*
