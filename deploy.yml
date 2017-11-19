@@ -1,4 +1,4 @@
----
+--- # deployment of devops workstation
 
 - hosts: all:localhost
   roles:
@@ -20,6 +20,8 @@
         executable: pip2
         extra_args: --user
       with_items:
+        - boto3    # https://boto3.readthedocs.io/en/latest/guide/quickstart.html
+        - awscli   # http://docs.aws.amazon.com/cli/latest/userguide/getting-help.html
         - httpstat
         - googler
         - speedtest_cli

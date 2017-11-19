@@ -1,81 +1,50 @@
 ---
 
-- name: Ensure apt-transport-https is installed.
-  apt: name=apt-transport-https state=present
+- name: "Deploy Debian: Ensure apt-transport-https is installed"
+  apt:
+    name=apt-transport-https
+    state=present
 
-- name: Debian | repository - update keyserver oracle_vbox.asc
+- name: "Deploy Debian: repository - Oracle key"
   apt_key:
     id: 'B0FAB3A13B907435925D9C954422A4B98AB5139'
     url: 'https://www.virtualbox.org/download/oracle_vbox.asc'
     state: present
 
-- name: Debian | repository - update keyserver oracle_vbox_2016.asc
+- name: "Deploy Debian: repository - Oracle 2016 key"
   apt_key:
     id: 'B9F8D658297AF3EFC18D5CDFA2F683C52980AECF'
     url: 'https://www.virtualbox.org/download/oracle_vbox_2016.asc'
     state: present
 
-- name: Debian | repository - riot matrix im client
+- name: "Deploy Debian: repository - riot matrix im client"
   apt_key:
     url: 'https://riot.im/packages/debian/repo-key.asc'
     state: present
 
+- name: "Deploy Debian: repository - Microsoft"
+  apt_key:
+    url: 'https://packages.microsoft.com/keys/microsoft.asc'
+    state: present
 
-- name: Debian | repository - update keyserver chrome
+- name: "Deloy Debian: repository - chrome"
   apt_key:
     url: 'https://dl.google.com/linux/linux_signing_key.pub'
     state: present
 
-- name: Debian | repository - update keyserver insync
+- name: "Deploy Debian: repository - insync"
   apt_key:
     keyserver: 'keyserver.ubuntu.com'
     id: 'ACCAF35C'
 
-- name: Debian | repository - update keyserver hashicorp
+- name: "Deploy Debian: repository - hashicorp"
   apt_key:
     keyserver: 'keyserver.ubuntu.com'
     id: '51852D87348FFC4C'
 
 
-- name: Debian | Add repos 
-  apt_repository:
-    repo: "{{ item }}"
-    state: present
-  with_items:
-    - 'deb http://download.virtualbox.org/virtualbox/debian {{ ansible_distribution_release }} contrib'
-    - 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
-    - 'ppa:sebastian-stenzel/cryptomator'
-    - 'deb http://apt.insynchq.com/ubuntu {{ ansible_distribution_release }} non-free contrib'
-    - 'deb https://riot.im/packages/debian/ xenial main'
-  register: repos 
 
-- name: Update apt cache if repo was added.
-  apt: update_cache=yes
-  when: repos.changed
-
-- name: Debian | install repo packages
-  apt:
-    pkg: '{{ item }}'
-    state: present
-    update_cache: yes
-    cache_valid_time: 3600
-  with_items: 
-    - dkms
-    - virtualbox-5.2
-    - google-chrome-stable
-    - cryptomator
-    - insync
-    - riot-web
-
-- name: Debian | install direct debian packages
-  apt:
-    deb: '{{ item }}'
-    update_cache: yes
-    cache_valid_time: 3600
-  with_items: 
-    - '{{ vagrant_deb }}'
-
-- name: Debian | install base packages
+- name: "Deploy Debian: install base packages"
   apt:
     pkg: '{{ item }}'
     state: present
@@ -102,40 +71,89 @@
     - exfat-fuse
     - exfat-utils
 
-- name: Debian | install virtualenvwrapper
+- name: "Deploy Debian: Add repos"
+  apt_repository:
+    repo: "{{ item }}"
+    state: present
+  with_items:
+    - 'deb http://download.virtualbox.org/virtualbox/debian {{ ansible_distribution_release }} contrib'
+    - 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
+    - 'deb [arch=amd64] https://packages.microsoft.com/ubuntu/16.04/prod xenial main'
+    - 'ppa:sebastian-stenzel/cryptomator'
+    - 'deb http://apt.insynchq.com/ubuntu {{ ansible_distribution_release }} non-free contrib'
+    - 'deb https://riot.im/packages/debian/ xenial main'
+  register: repos 
+
+- name: "Deploy Debian: install repo packages"
+  apt:
+    pkg: '{{ item }}'
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  with_items: 
+    - dkms
+    - virtualbox-5.2
+    - google-chrome-stable
+    - powershell
+    - cryptomator
+    - insync
+    - riot-web
+
+
+- name: "Deploy: get vagrant version"
+  command: "./latest-vagrant-deb.sh"
+  register: vagrant_deb_output
+
+- name: "Deploy Debian: Resolve vagrant_deb"
+  set_fact:
+   vagrant_deb: "{{ vagrant_deb_output.stdout }}"
+
+- debug: var=vagrant_deb
+
+
+- name: "Deploy Debian: Install debian packages directly from web"
+  apt:
+    deb: "{{ item }}"
+    update_cache: yes
+    cache_valid_time: 3600
+  with_items: 
+    - 'https://release.gitkraken.com/linux/gitkraken-amd64.deb'
+    - '{{ vagrant_deb }}'
+
+- name: "Deploy Debian: Install virtualenvwrapper"
   pip:
     name: virtualenvwrapper
     state: latest
 
-- name: Debian | install other user packages
+- name: "Deploy Debian: Install other user packages"
   apt:
     pkg: '{{ item }}'
     state: present
     update_cache: yes
     cache_valid_time: 3600
   with_items: 
-    - chromium-browser
-    - keepassx
-    - hexchat
-    - terminator
-    - tcpdump
-    - lynx
-    - whois
-    - nmap
-    - pandoc
-    - seahorse-nautilus
-    - seahorse-sharing
-    - icedtea-netx
-    - virt-viewer
-    - virt-manager
-    # virtualbox-ext-pack
+    - 'chromium-browser'
+    - 'keepassx'
+    - 'hexchat'
+    - 'terminator'
+    - 'tcpdump'
+    - 'lynx'
+    - 'whois'
+    - 'nmap'
+    - 'pandoc'
+    - 'seahorse-nautilus'
+    - 'seahorse-sharing'
+    - 'icedtea-netx'
+    - 'virt-viewer'
+    - 'virt-manager'
+    # 'virtualbox-ext-pack'
 
-- name: Debian | install yubi packages
+- name: "Deploy Debian: Install yubi packages"
   apt:
-    pkg: '{{ item }}'
+    pkg: "{{ item }}"
     state: present
     update_cache: yes
     cache_valid_time: 3600
   with_items: 
-    - yubioath-desktop
-    - yubikey-personalization-gui
+    - 'yubioath-desktop'
+    - 'yubikey-personalization-gui'

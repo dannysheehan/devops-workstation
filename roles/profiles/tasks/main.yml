@@ -6,20 +6,28 @@
   template:
     src="{{ item }}.yml"
     dest="~/.{{ item }}"
+  tags:
+    - 'profiles'
+
   with_items:
     - devopsrc
     - vimrc
     - screenrc
+
 
 - name: add devopsrc to .bashrc
   lineinfile:
     create=yes
     dest=~/.bashrc
     line=". ~/.devopsrc"
+  tags:
+    - 'profiles'
 
 - name: check if there is a .bash_profile
   stat: path=~/.bash_profile
   register: file_dot_bash_profile
+  tags:
+    - 'profiles'
 
 - name: copy in a .bash_profile if missing and mac osx
   copy:
@@ -27,13 +35,19 @@
     dest: ~/.bash_profile
   when: file_dot_bash_profile.stat.exists == False and 
         ansible_os_family == 'Darwin'
+  tags:
+    - 'profiles'
 
 - name: check if there is a .profile
   stat: path=~/.profile
   register: file_dot_profile
+  tags:
+    - 'profiles'
 
 - name: copy in a .profile if missing
   copy:
     src: profile
     dest: ~/.profile
   when: file_dot_profile.stat.exists == False
+  tags:
+    - 'profiles'
