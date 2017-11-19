@@ -1,5 +1,12 @@
 # devops-workstation
 
+Ensure your `/etc/ansible/hosts` file has at least the following entry
+
+```
+[local]
+localhost ansible_connection=local
+```
+
 Configuration for devops workstation. 
 
 Put your /home environment under ansible control so you can

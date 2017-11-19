@@ -22,6 +22,7 @@
       with_items:
         - boto3    # https://boto3.readthedocs.io/en/latest/guide/quickstart.html
         - awscli   # http://docs.aws.amazon.com/cli/latest/userguide/getting-help.html
+        - molecule # https://molecule.readthedocs.io
         - httpstat
         - googler
         - speedtest_cli

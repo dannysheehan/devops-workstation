@@ -43,7 +43,7 @@
     id: '51852D87348FFC4C'
 
 
-
+# https://stackoverflow.com/questions/41102299/unable-to-install-any-pip-module-module-object-has-no-attribute-cryptography 
 - name: "Deploy Debian: install base packages"
   apt:
     pkg: '{{ item }}'
