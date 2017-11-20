@@ -52,6 +52,7 @@
     cache_valid_time: 3600
   with_items: 
     - git
+    - git-flow
     - jq
     - encfs
     - python-pip
@@ -64,6 +65,7 @@
     - librsync-dev
     - libpcsclite-dev
     - swig
+    - lsyncd
     - network-manager-openconnect-gnome
     - libpam-google-authenticator
     - gnome-shell
@@ -138,6 +140,7 @@
     - 'terminator'
     - 'tcpdump'
     - 'lynx'
+    - 'p7zip-full'
     - 'whois'
     - 'nmap'
     - 'pandoc'

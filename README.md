@@ -1,12 +1,5 @@
 # devops-workstation
 
-Ensure your `/etc/ansible/hosts` file has at least the following entry
-
-```
-[local]
-localhost ansible_connection=local
-```
-
 Configuration for devops workstation. 
 
 Put your /home environment under ansible control so you can
@@ -24,7 +17,7 @@ apt install ansible git
 git config --global user.name "User Name" $ git config --global core.editor "vi"
 git config --global user.email user@email.com
 echo 'localhost ansible_host=127.0.0.1 ansible_connection=local' >> /etc/ansible/hosts
-```
+
 
 ## .bashrc
 
@@ -61,6 +54,15 @@ taurus:devops-workstation danny$
 ```
 
 NOTES:
+
+## Git
+
+[global git ignore](https://gist.github.com/subfuzion/db7f57fff2fb6998a16c)
+
+```bash
+git config --global core.excludesfile ~/.gitignore
+```
+
 
 ## Netmasks
 
