@@ -23,8 +23,13 @@
         - boto3    # https://boto3.readthedocs.io/en/latest/guide/quickstart.html
         - awscli   # http://docs.aws.amazon.com/cli/latest/userguide/getting-help.html
         - molecule # https://molecule.readthedocs.io
+        - pylint
         - httpstat
         - googler
         - speedtest_cli
 
 
+    - name: install vagrant plugins
+      command: "vagrant plugin install {{ item }}"
+      with_items:
+        - vagrant-aws

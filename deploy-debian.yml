@@ -149,6 +149,7 @@
     - 'icedtea-netx'
     - 'virt-viewer'
     - 'virt-manager'
+    - 'mariadb-client'
     # 'virtualbox-ext-pack'
 
 - name: "Deploy Debian: Install yubi packages"

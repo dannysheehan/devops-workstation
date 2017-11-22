@@ -100,6 +100,9 @@ get_sha() { git rev-parse --short HEAD 2>/dev/null; }
 
 update()  { git pull --rebase "$1";git submodule update --init --recursive "$1"; }
 
+# https://stackoverflow.com/questions/14947789/github-clone-from-pull-request
+pullrequest()      { git fetch origin pull/${1}/head:pull_${1}; git checkout pull_${1}; }
+
 # return length and type of pub/priv key
 keylen()  { ssh-keygen -lf "$1"; }
 
