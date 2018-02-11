@@ -42,6 +42,16 @@
     keyserver: 'keyserver.ubuntu.com'
     id: '51852D87348FFC4C'
 
+- name: "Deploy Debian: docker "
+  apt_key:
+    url: 'https://download.docker.com/linux/ubuntu/gpg'
+    id: '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'
+
+- name: "Deploy Debian: google cloud sdk "
+  apt_key:
+    url: 'https://packages.cloud.google.com/apt/doc/apt-key.gpg'
+    state: present
+
 
 # https://stackoverflow.com/questions/41102299/unable-to-install-any-pip-module-module-object-has-no-attribute-cryptography 
 - name: "Deploy Debian: install base packages"
@@ -53,6 +63,7 @@
   with_items: 
     - git
     - git-flow
+    - meld
     - jq
     - encfs
     - python-pip
@@ -72,6 +83,11 @@
     - ubuntu-gnome-desktop
     - exfat-fuse
     - exfat-utils
+    - apt-transport-https 
+    - software-properties-common
+    - ca-certificates
+    - curl
+
 
 - name: "Deploy Debian: Add repos"
   apt_repository:
@@ -80,10 +96,12 @@
   with_items:
     - 'deb http://download.virtualbox.org/virtualbox/debian {{ ansible_distribution_release }} contrib'
     - 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
-    - 'deb [arch=amd64] https://packages.microsoft.com/ubuntu/16.04/prod xenial main'
+    - 'deb [arch=amd64] https://packages.microsoft.com/ubuntu/16.04/prod {{ ansible_distribution_release }} main'
     - 'ppa:sebastian-stenzel/cryptomator'
     - 'deb http://apt.insynchq.com/ubuntu {{ ansible_distribution_release }} non-free contrib'
-    - 'deb https://riot.im/packages/debian/ xenial main'
+    - 'deb https://riot.im/packages/debian/ {{ ansible_distribution_release }} main'
+    - 'deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable'
+    - 'deb https://packages.cloud.google.com/apt cloud-sdk-{{ ansible_distribution_release }} main'
   register: repos 
 
 - name: "Deploy Debian: install repo packages"
@@ -100,15 +118,21 @@
     - cryptomator
     - insync
     - riot-web
+    - docker-ce
+    - google-cloud-sdk
+    - google-cloud-sdk-app-engine-python
+    - google-cloud-sdk-app-engine-python-extras
+    - kubectl
 
 
 - name: "Deploy: get vagrant version"
-  command: "./latest-vagrant-deb.sh"
+  command:  "./latest-vagrant-deb.sh"
+  changed_when: False
   register: vagrant_deb_output
 
 - name: "Deploy Debian: Resolve vagrant_deb"
   set_fact:
-   vagrant_deb: "{{ vagrant_deb_output.stdout }}"
+    vagrant_deb: "{{ vagrant_deb_output.stdout }}"
 
 - debug: var=vagrant_deb
 
@@ -125,7 +149,8 @@
 - name: "Deploy Debian: Install virtualenvwrapper"
   pip:
     name: virtualenvwrapper
-    state: latest
+    executable: pip2
+    extra_args: --user
 
 - name: "Deploy Debian: Install other user packages"
   apt:
@@ -143,14 +168,28 @@
     - 'p7zip-full'
     - 'whois'
     - 'nmap'
+    - 'dnsutils'
+    - 'net-tools'
     - 'pandoc'
     - 'seahorse-nautilus'
     - 'seahorse-sharing'
     - 'icedtea-netx'
+    - 'mariadb-client'
+
+- name: "Deploy Debian: Install kvm packages"
+  apt:
+    pkg: '{{ item }}'
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  with_items:
     - 'virt-viewer'
     - 'virt-manager'
-    - 'mariadb-client'
-    # 'virtualbox-ext-pack'
+    - 'qemu-kvm'
+    - 'libvirt-bin'
+    - 'virtinst'
+    - 'bridge-utils'
+    - 'cpu-checker'
 
 - name: "Deploy Debian: Install yubi packages"
   apt:
@@ -161,3 +200,4 @@
   with_items: 
     - 'yubioath-desktop'
     - 'yubikey-personalization-gui'
+

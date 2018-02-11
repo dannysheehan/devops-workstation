@@ -1,0 +1,15 @@
+---
+
+# For use with pre-commit.
+# See usage instructions at http://pre-commit.com
+
+repos:
+- repo: https://github.com/willthames/ansible-lint.git
+  sha: v3.4.20
+  hooks:
+  -   id: ansible-lint
+      name: Ansible-lint
+      description: This hook runs ansible-lint.
+      entry: ansible-lint
+      language: python
+      files: \.(yaml|yml)$

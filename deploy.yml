@@ -1,12 +1,46 @@
 --- # deployment of devops workstation
 
-- hosts: all:localhost
-  roles:
-    # profiles
+# | jq --raw-output .tag_name"
+
+#- hosts: all:localhost
+#  roles:
+#    # profiles
 
 - hosts: localhost
 
+  gather_facts: no
+
+  vars:
+    vagrant_plugins:
+      - vagrant-hosts
+      - vagrant-vbox-snapshot
+      - vagrant-aws
+      - vagrant-vbguest
+
   tasks:
+
+    - name: "get vagrant latest version"
+      uri:
+        url: "https://releases.hashicorp.com/vagrant/index.json"
+        method: GET
+        body: JSON
+        return_contents: yes 
+      register: json_output
+
+    - debug: msg={{ json_output.json }}
+
+#
+# versions.values(@)[].version | sort(@)[-1]
+# versions.values(@) | sort(@) | max (@)
+# versions."2.0.1".builds[?os == 'debian' && arch == 'x86_64'].url
+
+    #- debug: msg={{ json_output.json | json_query('versions.* | [0] | builds[?os=="debian"].os') }}
+    # - debug: msg={{ json_output.json | json_query('versions.*.builds[*] | [0]') }}
+    # - debug: msg={{ json_output.json | json_query('versions.*.builds[?max_by(builds, &version)]') }}
+
+
+    - meta: end_play
+ 
 
     - include_tasks: deploy-debian.yml
       become: yes
@@ -20,16 +54,27 @@
         executable: pip2
         extra_args: --user
       with_items:
-        - boto3    # https://boto3.readthedocs.io/en/latest/guide/quickstart.html
+        - ansible-lint # https://github.com/willthames/ansible-lint
         - awscli   # http://docs.aws.amazon.com/cli/latest/userguide/getting-help.html
+        - boto3    # https://boto3.readthedocs.io/en/latest/guide/quickstart.html
+        - docker-compose
+        - httpstat
+        - jmespath-terminal  # https://github.com/jmespath/jmespath.terminal
         - molecule # https://molecule.readthedocs.io
         - pylint
-        - httpstat
-        - googler
+        - pre-commit # https://pre-commit.com/
         - speedtest_cli
 
 
-    - name: install vagrant plugins
+    - name: "List installed vagrant plugins"
+      command: "vagrant plugin list"
+      changed_when: False
+      register: vagrant_initial_plugins_list
+
+    - name: "install vagrant plugins"
       command: "vagrant plugin install {{ item }}"
-      with_items:
-        - vagrant-aws
+      register: install_vagrant_plugin
+      whith_items:
+        "{{ vagrant_plugins }}"
+      when: "{{ item not in vagrant_initial_plugins_list.stdout }}"
+
