@@ -19,15 +19,21 @@
 
   tasks:
 
-
-    # meta: end_play
- 
-
     - include_tasks: deploy-debian.yml
       become: yes
-      become_method: sudo
+      # become_method: sudo
       when: ansible_os_family == 'Debian'
       tags: package
+
+    - name: install extra user npm modules 
+      npm:
+        name: '{{ item }}'
+        state: present
+        global: yes
+      with_items:
+        - 'jsonlint'
+      tags:
+        - install-json-modules
 
     - name: install extra user pip modules 
       pip:

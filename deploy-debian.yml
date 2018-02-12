@@ -1,5 +1,33 @@
 ---
 
+
+- name: "get packer latest version"
+  uri:
+    url: "https://releases.hashicorp.com/packer"
+    method: GET
+    return_content: yes
+  register: uri_output
+  check_mode: no
+
+- set_fact:
+    packer_ver: "{{ uri_output.content | regex_findall(ver_regex) | max }}"
+  vars:
+    ver_regex: '<a href=\"/packer/([\d\.]+)/'
+
+- debug: var=packer_ver
+
+- name: "Download Packer"
+  get_url:
+    url: https://releases.hashicorp.com/packer/{{ packer_ver }}/packer_{{ packer_ver }}_linux_amd64.zip
+    dest: /usr/local/src/packer_{{ packer_ver }}_linux_amd64.zip
+
+- name: "Extract and install Packer"
+  unarchive:
+    src: /usr/local/src/packer_{{ packer_ver }}_linux_amd64.zip
+    dest: /usr/local/bin
+    copy: no
+
+
 - name: "Deploy Debian: Ensure apt-transport-https is installed"
   apt:
     name=apt-transport-https
@@ -192,6 +220,7 @@
     - 'seahorse-sharing'
     - 'icedtea-netx'
     - 'mariadb-client'
+    - 'npm'
 
 - name: "Deploy Debian: Install kvm packages"
   apt:
