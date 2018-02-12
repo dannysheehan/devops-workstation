@@ -124,17 +124,34 @@
     - google-cloud-sdk-app-engine-python-extras
     - kubectl
 
+- name: "get vagrant latest version"
+  uri:
+    url: "https://releases.hashicorp.com/vagrant/index.json"
+    method: GET
+    body: JSON
+    return_contents: yes 
+  register: json_output
+  check_mode: no
 
-- name: "Deploy: get vagrant version"
-  command:  "./latest-vagrant-deb.sh"
-  changed_when: False
-  register: vagrant_deb_output
-
-- name: "Deploy Debian: Resolve vagrant_deb"
+#
+# Find latest version of vagrant.
+#
+- mame: "set version keys"
   set_fact:
-    vagrant_deb: "{{ vagrant_deb_output.stdout }}"
+    vagrant_ver: "{{ json_output.json | json_query(ver_qry) }}"
+  vars:
+    ver_qry: "versions.keys(@) | sort(@) | max(@)"
+- debug: var=vagrant_ver
 
-- debug: var=vagrant_deb
+#
+# Find installation url
+#
+- mame: "set version url "
+  set_fact:
+    vagrant_url: "{{ json_output.json | json_query(url_qry) }}"
+  vars:
+    url_qry: "versions.\"{{ vagrant_ver}}\".builds[?os == 'debian' && arch == 'x86_64'].url"
+- debug: var=vagrant_url
 
 
 - name: "Deploy Debian: Install debian packages directly from web"
@@ -144,7 +161,7 @@
     cache_valid_time: 3600
   with_items: 
     - 'https://release.gitkraken.com/linux/gitkraken-amd64.deb'
-    - '{{ vagrant_deb }}'
+    - '{{ vagrant_url }}'
 
 - name: "Deploy Debian: Install virtualenvwrapper"
   pip:

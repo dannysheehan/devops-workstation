@@ -8,7 +8,7 @@
 
 - hosts: localhost
 
-  gather_facts: no
+  gather_facts: yes
 
   vars:
     vagrant_plugins:
@@ -19,27 +19,8 @@
 
   tasks:
 
-    - name: "get vagrant latest version"
-      uri:
-        url: "https://releases.hashicorp.com/vagrant/index.json"
-        method: GET
-        body: JSON
-        return_contents: yes 
-      register: json_output
 
-    - debug: msg={{ json_output.json }}
-
-#
-# versions.values(@)[].version | sort(@)[-1]
-# versions.values(@) | sort(@) | max (@)
-# versions."2.0.1".builds[?os == 'debian' && arch == 'x86_64'].url
-
-    #- debug: msg={{ json_output.json | json_query('versions.* | [0] | builds[?os=="debian"].os') }}
-    # - debug: msg={{ json_output.json | json_query('versions.*.builds[*] | [0]') }}
-    # - debug: msg={{ json_output.json | json_query('versions.*.builds[?max_by(builds, &version)]') }}
-
-
-    - meta: end_play
+    # meta: end_play
  
 
     - include_tasks: deploy-debian.yml
@@ -51,6 +32,7 @@
     - name: install extra user pip modules 
       pip:
         name: '{{ item }}'
+        state: present
         executable: pip2
         extra_args: --user
       with_items:
@@ -64,17 +46,24 @@
         - pylint
         - pre-commit # https://pre-commit.com/
         - speedtest_cli
+      tags:
+        - install-pip-modules
 
 
     - name: "List installed vagrant plugins"
       command: "vagrant plugin list"
-      changed_when: False
       register: vagrant_initial_plugins_list
+      changed_when: no
+      check_mode: no
+      tags:
+        - install-vagrant-plugins
 
     - name: "install vagrant plugins"
       command: "vagrant plugin install {{ item }}"
       register: install_vagrant_plugin
-      whith_items:
+      with_items:
         "{{ vagrant_plugins }}"
-      when: "{{ item not in vagrant_initial_plugins_list.stdout }}"
+      when: item not in vagrant_initial_plugins_list.stdout
+      tags:
+        - install-vagrant-plugins
 
