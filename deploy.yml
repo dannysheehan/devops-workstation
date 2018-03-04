@@ -11,6 +11,33 @@
   gather_facts: yes
 
   vars:
+    # Set the version of Node.js to install ("0.12", "4.x", "5.x", "6.x", "8.x").
+    # Version numbers from Nodesource: https://github.com/nodesource/distributions
+    nodejs_version: "8.x"
+    npm_config_prefix: "/usr"
+
+    # Set to true to suppress the UID/GID switching when running 
+    # package scripts. If set explicitly to false, then installing as a 
+    # non-root user will fail.
+    npm_config_unsafe_perm: "false"
+
+    pip_modules:
+      - ansible-lint # https://github.com/willthames/ansible-lint
+      - awscli   # http://docs.aws.amazon.com/cli/latest/userguide/getting-help.html
+      - boto3    # https://boto3.readthedocs.io/en/latest/guide/quickstart.html
+      - docker-compose
+      - httpstat
+      - molecule # https://molecule.readthedocs.io
+      - pylint
+      - pre-commit # https://pre-commit.com/
+      - speedtest_cli
+      - jmespath-terminal  # https://github.com/jmespath/jmespath.terminal
+
+    npm_modules:
+      - 'jsonlint'
+      - 'jslint'
+      - 'serverless'
+
     vagrant_plugins:
       - vagrant-hosts
       - vagrant-vbox-snapshot
@@ -21,37 +48,36 @@
 
     - include_tasks: deploy-debian.yml
       become: yes
-      # become_method: sudo
       when: ansible_os_family == 'Debian'
       tags: package
 
-    - name: install extra user npm modules 
+
+    - name: install extra system npm modules 
       npm:
         name: '{{ item }}'
         state: present
         global: yes
       with_items:
-        - 'jsonlint'
+        "{{ npm_modules }}"
+      environment:
+        NPM_CONFIG_PREFIX: "{{ npm_config_prefix }}"
+        NODE_PATH: "{{ npm_config_prefix }}/lib/node_modules"
+        NPM_CONFIG_UNSAFE_PERM: "{{ npm_config_unsafe_perm }}"
+        PATH: "{{ npm_config_prefix }}/bin:{{ ansible_env.PATH }}"
+      become: yes
       tags:
-        - install-json-modules
+        - install-npm-packages
 
-    - name: install extra user pip modules 
+
+    - name: install extra system pip modules 
       pip:
         name: '{{ item }}'
         state: present
         executable: pip2
-        extra_args: --user
+        # extra_args: --user
       with_items:
-        - ansible-lint # https://github.com/willthames/ansible-lint
-        - awscli   # http://docs.aws.amazon.com/cli/latest/userguide/getting-help.html
-        - boto3    # https://boto3.readthedocs.io/en/latest/guide/quickstart.html
-        - docker-compose
-        - httpstat
-        - jmespath-terminal  # https://github.com/jmespath/jmespath.terminal
-        - molecule # https://molecule.readthedocs.io
-        - pylint
-        - pre-commit # https://pre-commit.com/
-        - speedtest_cli
+        "{{ pip_modules }}"
+      become: yes
       tags:
         - install-pip-modules
 
@@ -72,4 +98,3 @@
       when: item not in vagrant_initial_plugins_list.stdout
       tags:
         - install-vagrant-plugins
-

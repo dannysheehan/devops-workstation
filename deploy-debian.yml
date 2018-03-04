@@ -1,6 +1,10 @@
 ---
 
 
+
+#
+# install packer
+#
 - name: "get packer latest version"
   uri:
     url: "https://releases.hashicorp.com/packer"
@@ -80,6 +84,12 @@
     url: 'https://packages.cloud.google.com/apt/doc/apt-key.gpg'
     state: present
 
+- name: Import the NodeSource GPG key into apt
+  apt_key:
+    url: https://keyserver.ubuntu.com/pks/lookup?op=get&fingerprint=on&search=0x1655A0AB68576280
+    id: "68576280"
+    state: present
+
 
 # https://stackoverflow.com/questions/41102299/unable-to-install-any-pip-module-module-object-has-no-attribute-cryptography 
 - name: "Deploy Debian: install base packages"
@@ -130,6 +140,8 @@
     - 'deb https://riot.im/packages/debian/ {{ ansible_distribution_release }} main'
     - 'deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable'
     - 'deb https://packages.cloud.google.com/apt cloud-sdk-{{ ansible_distribution_release }} main'
+    - 'deb https://deb.nodesource.com/node_{{ nodejs_version }} {{ ansible_distribution_release }} main'
+    - 'deb-src https://deb.nodesource.com/node_{{ nodejs_version }} {{ ansible_distribution_release }} main'
   register: repos 
 
 - name: "Deploy Debian: install repo packages"
@@ -151,6 +163,7 @@
     - google-cloud-sdk-app-engine-python
     - google-cloud-sdk-app-engine-python-extras
     - kubectl
+    - nodejs
 
 - name: "get vagrant latest version"
   uri:
@@ -220,7 +233,6 @@
     - 'seahorse-sharing'
     - 'icedtea-netx'
     - 'mariadb-client'
-    - 'npm'
 
 - name: "Deploy Debian: Install kvm packages"
   apt:
