@@ -1,6 +1,6 @@
 ---
 
-
+# https://fastoredis.com/trial_users_downloads/linux/fastoredis-1.16.1-x86_64.deb
 
 #
 # install packer
@@ -90,6 +90,11 @@
     id: "68576280"
     state: present
 
+- name: "Deploy Debian: slacktechnologies"
+  apt_key:
+    url: 'https://packagecloud.io/slacktechnologies/slack/gpgkey'
+    state: present
+
 
 # https://stackoverflow.com/questions/41102299/unable-to-install-any-pip-module-module-object-has-no-attribute-cryptography 
 - name: "Deploy Debian: install base packages"
@@ -142,6 +147,9 @@
     - 'deb https://packages.cloud.google.com/apt cloud-sdk-{{ ansible_distribution_release }} main'
     - 'deb https://deb.nodesource.com/node_{{ nodejs_version }} {{ ansible_distribution_release }} main'
     - 'deb-src https://deb.nodesource.com/node_{{ nodejs_version }} {{ ansible_distribution_release }} main'
+    - 'deb https://packagecloud.io/slacktechnologies/slack/ubuntu/ {{ ansible_distribution_release }} main'
+    - 'deb-src https://packagecloud.io/slacktechnologies/slack/ubuntu/ {{ ansible_distribution_release }} main'
+
   register: repos 
 
 - name: "Deploy Debian: install repo packages"
@@ -164,6 +172,7 @@
     - google-cloud-sdk-app-engine-python-extras
     - kubectl
     - nodejs
+    - slack
 
 - name: "get vagrant latest version"
   uri:
@@ -248,6 +257,10 @@
     - 'virtinst'
     - 'bridge-utils'
     - 'cpu-checker'
+
+# sudo usermod -a -G libvirtd $(whoami)
+# sudo usermod -a -G docker $(whoami)
+# sudo usermod -a -G lxd $(whoami)
 
 - name: "Deploy Debian: Install yubi packages"
   apt:
