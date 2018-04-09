@@ -1,6 +1,28 @@
 ---
 
 # https://fastoredis.com/trial_users_downloads/linux/fastoredis-1.16.1-x86_64.deb
+# snap install slack --classic
+
+
+#
+# Install SQL Operations Center
+#
+- name: "get SQLOS latest version"
+  uri:
+    url: "https://api.github.com/repos/Microsoft/sqlopsstudio/releases"
+    method: GET
+    body: JSON
+    return_contents: yes 
+  register: json_output
+  check_mode: no
+
+- mame: "get download url"
+  set_fact:
+    sql_operations_studio_url: "{{ json_output.json | json_query(download_qry) }}"
+  vars:
+    download_qry: "[0].assets[0].browser_download_url"
+- debug: var=sql_operations_studio_url
+
 
 #
 # install packer
@@ -17,7 +39,6 @@
     packer_ver: "{{ uri_output.content | regex_findall(ver_regex) | max }}"
   vars:
     ver_regex: '<a href=\"/packer/([\d\.]+)/'
-
 - debug: var=packer_ver
 
 - name: "Download Packer"
@@ -30,6 +51,47 @@
     src: /usr/local/src/packer_{{ packer_ver }}_linux_amd64.zip
     dest: /usr/local/bin
     copy: no
+
+
+- name: "get vagrant latest version"
+  uri:
+    url: "https://releases.hashicorp.com/vagrant/index.json"
+    method: GET
+    body: JSON
+    return_contents: yes 
+  register: json_output
+  check_mode: no
+
+#
+# Find latest version of vagrant.
+#
+- mame: "set version keys"
+  set_fact:
+    vagrant_ver: "{{ json_output.json | json_query(ver_qry) }}"
+  vars:
+    ver_qry: "versions.keys(@) | sort(@) | max(@)"
+- debug: var=vagrant_ver
+
+#
+# Find installation url
+#
+- mame: "set version url "
+  set_fact:
+    vagrant_url: "{{ json_output.json | json_query(url_qry) }}"
+  vars:
+    url_qry: "versions.\"{{ vagrant_ver}}\".builds[?os == 'debian' && arch == 'x86_64'].url"
+- debug: var=vagrant_url
+
+
+- name: "Deploy Debian: Install debian packages that must be installed directly from web"
+  apt:
+    deb: "{{ item }}"
+    update_cache: yes
+    cache_valid_time: 3600
+  with_items: 
+    - '{{ sql_operations_studio_url }}'
+    - 'https://release.gitkraken.com/linux/gitkraken-amd64.deb'
+    - '{{ vagrant_url }}'
 
 
 - name: "Deploy Debian: Ensure apt-transport-https is installed"
@@ -90,11 +152,6 @@
     id: "68576280"
     state: present
 
-- name: "Deploy Debian: slacktechnologies"
-  apt_key:
-    url: 'https://packagecloud.io/slacktechnologies/slack/gpgkey'
-    state: present
-
 
 # https://stackoverflow.com/questions/41102299/unable-to-install-any-pip-module-module-object-has-no-attribute-cryptography 
 - name: "Deploy Debian: install base packages"
@@ -147,8 +204,6 @@
     - 'deb https://packages.cloud.google.com/apt cloud-sdk-{{ ansible_distribution_release }} main'
     - 'deb https://deb.nodesource.com/node_{{ nodejs_version }} {{ ansible_distribution_release }} main'
     - 'deb-src https://deb.nodesource.com/node_{{ nodejs_version }} {{ ansible_distribution_release }} main'
-    - 'deb https://packagecloud.io/slacktechnologies/slack/ubuntu/ {{ ansible_distribution_release }} main'
-    - 'deb-src https://packagecloud.io/slacktechnologies/slack/ubuntu/ {{ ansible_distribution_release }} main'
 
   register: repos 
 
@@ -159,59 +214,22 @@
     update_cache: yes
     cache_valid_time: 3600
   with_items: 
+    - docker-ce
     - dkms
     - virtualbox-5.2
     - google-chrome-stable
-    - powershell
     - cryptomator
     - insync
     - riot-web
-    - docker-ce
     - google-cloud-sdk
     - google-cloud-sdk-app-engine-python
     - google-cloud-sdk-app-engine-python-extras
     - kubectl
     - nodejs
-    - slack
+    - powershell # microsoft
+    - mssql-tools # microsoft
+    - unixodbc-dev # microsoft
 
-- name: "get vagrant latest version"
-  uri:
-    url: "https://releases.hashicorp.com/vagrant/index.json"
-    method: GET
-    body: JSON
-    return_contents: yes 
-  register: json_output
-  check_mode: no
-
-#
-# Find latest version of vagrant.
-#
-- mame: "set version keys"
-  set_fact:
-    vagrant_ver: "{{ json_output.json | json_query(ver_qry) }}"
-  vars:
-    ver_qry: "versions.keys(@) | sort(@) | max(@)"
-- debug: var=vagrant_ver
-
-#
-# Find installation url
-#
-- mame: "set version url "
-  set_fact:
-    vagrant_url: "{{ json_output.json | json_query(url_qry) }}"
-  vars:
-    url_qry: "versions.\"{{ vagrant_ver}}\".builds[?os == 'debian' && arch == 'x86_64'].url"
-- debug: var=vagrant_url
-
-
-- name: "Deploy Debian: Install debian packages directly from web"
-  apt:
-    deb: "{{ item }}"
-    update_cache: yes
-    cache_valid_time: 3600
-  with_items: 
-    - 'https://release.gitkraken.com/linux/gitkraken-amd64.deb'
-    - '{{ vagrant_url }}'
 
 - name: "Deploy Debian: Install virtualenvwrapper"
   pip:
@@ -232,6 +250,7 @@
     - 'terminator'
     - 'tcpdump'
     - 'lynx'
+    - 'elinks'
     - 'p7zip-full'
     - 'whois'
     - 'nmap'

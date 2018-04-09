@@ -4,7 +4,7 @@
 
 - name: copy profile files to users home directory
   template:
-    src="{{ item }}.yml"
+    src="{{ item }}.j2"
     dest="~/.{{ item }}"
   tags:
     - 'profiles'

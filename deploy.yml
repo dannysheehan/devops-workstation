@@ -7,13 +7,18 @@
 # curl -LO https://storage.googleapis.com/minikube/releases/latest/docker-machine-driver-kvm2 && chmod +x docker-machine-driver-kvm2 && sudo mv docker-machine-driver-kvm2 /usr/bin/
 # minikube start --vm-driver kvm2
 
+# https://docs.microsoft.com/en-gb/sql/sql-operations-studio/download
+
 - hosts: all:localhost
+  gather_facts: no
 
   roles:
     - profiles
 
 
+
 - hosts: localhost
+  become: yes
 
   vars:
     # Set the version of Node.js to install ("0.12", "4.x", "5.x", "6.x", "8.x").
@@ -34,15 +39,15 @@
       - docker-compose
       - httpstat
       - docker-py
-      - molecule # https://molecule.readthedocs.io
+      - molecule           # https://molecule.readthedocs.io
       - testinfra
       - pylint
-      - pre-commit # https://pre-commit.com/
+      - pre-commit         # https://pre-commit.com/
       - speedtest_cli
       - python-openstackclient
       # python-pthon-PROJECTclient  # https://docs.openstack.org/newton/user-guide/common/cli-install-openstack-command-line-clients.html
       - jmespath-terminal  # jpterm https://github.com/jmespath/jmespath.terminal
-      - cheat  # https://github.com/chrisallenlane/cheaf
+      - cheat              # https://github.com/chrisallenlane/cheaf
 
     npm_modules:
       - 'jsonlint'
@@ -50,10 +55,14 @@
       - 'serverless'
 
     vagrant_plugins:
-      - vagrant-hosts
+      - vagrant-hosts   # https://github.com/oscar-stack/vagrant-hosts
       - vagrant-vbox-snapshot
+      - vagrant-vbguest # required to install VirtualBox Guest Addtions into the Virtual Machine
       - vagrant-aws
-      - vagrant-vbguest
+      - vagrant-google
+      - vagrant-libvirt
+      - vagrant-openstack-provider
+
 
   tasks:
 

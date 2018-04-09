@@ -22,7 +22,8 @@ export EDITOR=vi
 export PROJECT_HOME=~/PROJECTS
 export WORKON_HOME=~/.virtualenvs
 
-export PYENV_VERSION="2.7.12"
+# export PYENV_VERSION="2.7.12"
+
 export PYENV_VIRTUALENV_DISABLE_PROMPT=1
 
 export EC2_INI_PATH=/etc/ansible/ec2.ini 
@@ -35,6 +36,7 @@ WEATHER="Brisbane?m"
 # export SYSTEMD_PAGER=
 
 {% raw %}
+
 
 # guard to avoid breaking scp and sftp if output is displayed.
 # [[ $- == *i* ]] || return 0
@@ -81,6 +83,18 @@ alias gpumeminfo='grep -i --color memory /var/log/Xorg.0.log'
 
 # always resume/continue partial downloads.
 alias wget='wget -c'
+
+# https://gist.github.com/lukechilds/a83e1d7127b78fef38c2914c4ececc3c
+get_latest_release() {
+  curl --silent "https://api.github.com/repos/$1/releases/latest" | # Get latest release from GitHub api
+    grep '"tag_name":' |                                            # Get tag line
+    sed -E 's/.*"([^"]+)".*/\1/'                                    # Pluck JSON value
+}
+
+get_release_download_url() {
+  curl --silent "https://api.github.com/repos/$1/releases" |
+    jq --raw-output '.[0].assets[0].browser_download_url'
+}
 
 
 addkey () { sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$1";}
