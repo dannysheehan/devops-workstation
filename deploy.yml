@@ -26,6 +26,8 @@
     nodejs_version: "8.x"
     npm_config_prefix: "/usr"
 
+    devops_user: "{{ lookup('env', 'USER') }}"
+
     # Set to true to suppress the UID/GID switching when running 
     # package scripts. If set explicitly to false, then installing as a 
     # non-root user will fail.
@@ -63,9 +65,21 @@
       - vagrant-libvirt
       - vagrant-openstack-provider
 
+    snap_classic_packages:
+      - goland
+      - phpstorm
+      - pycharm-professional
+      - skype
+      - slack
+
+    snap_packages:
+      - spotify
+      - vlc
+      - lxd
+
+
 
   tasks:
-
     - include_tasks: deploy-debian.yml
       become: yes
       when: ansible_os_family == 'Debian'
@@ -122,3 +136,34 @@
       when: item not in vagrant_initial_plugins_list.stdout
       tags:
         - install-vagrant-plugins
+
+
+    - name: "Clone netdata repo"
+      git:
+        clone: yes
+        update: yes
+        repo: https://github.com/firehol/netdata.git
+        dest: /usr/src/netdata
+        version: master
+      register: gitupdate
+
+    - name: "Installation"
+      command: >
+        /usr/src/netdata/netdata-installer.sh 
+           --dont-wait --libs-are-really-here
+      args:
+        chdir: /usr/src/netdata
+      when: gitupdate.changed
+      tags:
+        - skip_ansible_lint 
+
+
+    - name: "Add user to groups"
+      user:
+        name: "{{ devops_user }}"
+        groups: "{{ item }}"
+        append: yes
+      with_items:
+        - libvirtd
+        - docker
+        - lxd
