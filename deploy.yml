@@ -4,6 +4,8 @@
 # https://download.studio3t.com/studio-3t/linux/2018.2.4/studio-3t-linux-x64.tar.gz
 # curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && chmod +x minikube
 # curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod +x kubectl
+#  https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
+
 # curl -LO https://storage.googleapis.com/minikube/releases/latest/docker-machine-driver-kvm2 && chmod +x docker-machine-driver-kvm2 && sudo mv docker-machine-driver-kvm2 /usr/bin/
 # minikube start --vm-driver kvm2
 
@@ -14,7 +16,6 @@
 
   roles:
     - profiles
-
 
 
 - hosts: localhost
@@ -86,6 +87,65 @@
       tags: package
 
 
+    - name: "get latest kubunetes heml verion"
+      uri:
+        url: "https://github.com/kubernetes/helm/releases/latest"
+        return_contents: no 
+      register: output_result
+
+
+    - name: "get latest version"
+      set_fact:
+        helm_latest: "{{ output_result.url | basename }}"
+
+    - debug:
+        var: helm_latest
+
+    - name: "Download helm"
+      get_url:
+        url: "https://storage.googleapis.com/kubernetes-helm/helm-{{ helm_latest }}-linux-amd64.tar.gz"
+        dest: "/usr/local/src/latest-helm.tar.gz"
+
+    - name: "Extract and install heml"
+      unarchive:
+        src: /usr/local/src/latest-helm.tar.gz
+        dest: /usr/local/src
+        copy: no
+
+    - name: "copy to bin directory"
+      copy:
+        src: /usr/local/src/linux-amd64/helm
+        dest: /usr/local/bin/helm
+        mode: 0755
+
+
+
+    # get latest kops URL"
+    #
+    - name: "get kops latest version"
+      uri:
+        url: "https://api.github.com/repos/kubernetes/kops/releases/latest"
+        method: GET
+        body: JSON
+        return_contents: yes 
+      register: json_output
+      check_mode: no
+
+    - name: "Download kops"
+      debug:
+        msg: "{{ json_output.json.tag_name }}"
+    
+    - mame: "get download url for latest kops"
+      set_fact:
+        kops_url: "https://github.com/kubernetes/kops/releases/download/{{ json_output.json.tag_name }}/kops-linux-amd64"
+    
+    - name: "Download kops"
+      get_url:
+        url: "{{ kops_url }}"
+        dest: "/usr/local/bin/kops"
+        mode: 0755
+
+
     # name: ensue we have latest npm version
     # https://docs.npmjs.com/getting-started/installing-node
     # npm install npm@latest -g
@@ -119,6 +179,13 @@
       tags:
         - install-pip-modules
 
+
+    - name: "Upgrade existing installed vagrant plugins"
+      command: "vagrant plugin update"
+      register: vagrant_initial_plugins_list
+      changed_when: no
+      tags:
+        - install-vagrant-plugins
 
     - name: "List installed vagrant plugins"
       command: "vagrant plugin list"
