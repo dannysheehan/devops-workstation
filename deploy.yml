@@ -68,15 +68,15 @@
 
     snap_classic_packages:
       - goland
-      - phpstorm
-      - pycharm-professional
-      - skype
-      - slack
+      # phpstorm
+      # pycharm-professional
+      # skype
+      # slack
 
-    snap_packages:
-      - spotify
-      - vlc
-      - lxd
+    snap_packages: []
+      # spotify
+      # vlc
+      # lxd
 
 
 
@@ -233,4 +233,4 @@
       with_items:
         - libvirtd
         - docker
-        - lxd
+        # lxd

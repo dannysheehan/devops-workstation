@@ -29,15 +29,6 @@
   tags:
     - 'profiles'
 
-- name: copy in a .bash_profile if missing and mac osx
-  copy:
-    src: bash_profile
-    dest: ~/.bash_profile
-  when: file_dot_bash_profile.stat.exists == False and 
-        ansible_os_family == 'Darwin'
-  tags:
-    - 'profiles'
-
 - name: check if there is a .profile
   stat: path=~/.profile
   register: file_dot_profile

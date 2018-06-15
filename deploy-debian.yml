@@ -285,7 +285,6 @@
     repo: "{{ item }}"
     state: present
   with_items:
-    - 'deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian {{ ansible_distribution_release }} contrib'
     - 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
     - 'deb [arch=amd64] https://packages.microsoft.com/ubuntu/16.04/prod {{ ansible_distribution_release }} main'
     - 'ppa:sebastian-stenzel/cryptomator'
@@ -294,6 +293,7 @@
     - 'deb [arch=amd64] https://packages.cloud.google.com/apt cloud-sdk-{{ ansible_distribution_release }} main'
     - 'deb [arch=amd64] https://deb.nodesource.com/node_{{ nodejs_version }} {{ ansible_distribution_release }} main'
     - 'deb [arch=amd64] http://ppa.launchpad.net/mozillateam/firefox-next/ubuntu {{ ansible_distribution_release }} main'
+    - 'deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian {{ ansible_distribution_release }} contrib'
     # 'deb-src https://deb.nodesource.com/node_{{ nodejs_version }} {{ ansible_distribution_release }} main'
     # 'deb [arch=amd64] https://riot.im/packages/debian/ {{ ansible_distribution_release }} main'
 
@@ -305,10 +305,12 @@
     state: present
     update_cache: yes
     cache_valid_time: 3600
+  environment:
+          ACCEPT_EULA: 'y'
   with_items: 
     - docker-ce
     - dkms
-    - virtualbox-5.2
+    # virtualbox-5.2
     - google-chrome-stable
     - cryptomator
     - insync
