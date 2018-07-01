@@ -67,6 +67,10 @@ alias cdiff='colordiff'
 
 alias openfile='xdg-open'
 
+alias fact="curl -s randomfunfacts.com | grep strong | cut -d\> -f5- | cut -d\< -f1"
+
+function gravatar { openfile "https://s.gravatar.com/avatar/$(echo -n $@ | md5sum | awk '{print $1}')?s=250"; }
+
 alias mountls='mount |column -t'
 
 alias clearhistory='cat /dev/null > ~/.bash_history && history -c && exit'
@@ -85,14 +89,8 @@ alias gpumeminfo='grep -i --color memory /var/log/Xorg.0.log'
 alias wget='wget -c'
 
 # https://gist.github.com/lukechilds/a83e1d7127b78fef38c2914c4ececc3c
-get_latest_release() {
-  curl --silent "https://api.github.com/repos/$1/releases/latest" | # Get latest release from GitHub api
-    grep '"tag_name":' |                                            # Get tag line
-    sed -E 's/.*"([^"]+)".*/\1/'                                    # Pluck JSON value
-}
-
 get_release_download_url() {
-  curl --silent "https://api.github.com/repos/$1/releases" |
+  curl --silent "https://api.github.com/repos/$1/releases" | \
     jq --raw-output '.[0].assets[0].browser_download_url'
 }
 
@@ -265,10 +263,28 @@ alias fwrules='sudo /sbin/iptables -L -n -v --line-numbers'
 # show only hidden files
 alias hidden="ls -drt1 \.* | egrep -v \"^(\.|\.\.)$\""
 
-if [ "$UNAME" = Darwin ]; then
-  trash()     { command mv "$@" ~/.Trash ; }
-  spotlight() { mdfind "kMDItemDisplayName == '$@'wc"; }
-fi
+#if [ "$UNAME" = Darwin ]; then
+#  trash()     { command mv "$@" ~/.Trash ; }
+#  spotlight() { mdfind "kMDItemDisplayName == '$@'wc"; }
+#fi
+
+# shellcheck disable=SC2005
+function genpass-simple {
+  echo "$(LC_ALL=C tr -cd A-Za-z0-9 < /dev/urandom | head -c${1:-16})"
+}
+
+# shellcheck disable=SC2005
+function genpass-b64 {
+  echo "$(base64 -w0 < /dev/urandom | head -c${1:-32})"
+}
+
+# shellcheck disable=SC2005
+function genpass-complex {
+  echo "$(LC_ALL=C tr -cd ' -~' < /dev/urandom | head -c${1:-64})"
+}
+
+
+
 
 
 GPROMPT="https://github.com/git/git/raw/master/contrib/completion/git-prompt.sh"
@@ -343,6 +359,28 @@ GIT_PS1_SHOWCOLORHINTS=1
 GIT_PS1_SHOWSTASHSTATE=1
 GIT_PS1_SHOWUPSTREAM="auto"
 
-PROMPT_COMMAND='__git_ps1 "[${Yellow}$(echo -e code $?)$Color_Off]\n${VIRTUAL_ENV:+[${Yellow}$(basename $VIRTUAL_ENV)$Color_Off]\n}${GEM_HOME:+[${Cyan}$(rvm-prompt i v p g)$Color_Off]\n}" "\h:\W \u\\\$ " "[%s $(get_sha)]\n";set_titlebar "$USER@${HOSTNAME%%.*} $(basename $PWD)"'
+enter_directory(){
+  if [ "$PWD" != "$PREV_PWD" ]; then
+    PREV_PWD="$PWD";
+    if [ -e ".nvmrc" ]; then
+      nvm use;
+    elif [[ $(nvm version) != $(nvm version default)  ]]; then
+      echo "Reverting to nvm default version."
+      nvm use default
+    fi
+  fi
+}
 
+set_prompt_vars(){
+ if [ -f ".terraform/environment" ]; then
+   TERRAFORM_ENV=$(cat ".terraform/environment")
+ fi
+}
+
+if which aws_completer > /dev/null 2>&1; then
+  complete -C $(which aws_completer) aws
+fi
+
+
+PROMPT_COMMAND='enter_directory;set_prompt_vars; __git_ps1 "[${Yellow}$(echo -e code $?)$Color_Off]\n${VIRTUAL_ENV:+[${Yellow}$(basename $VIRTUAL_ENV)$Color_Off]\n}${TERRAFORM_ENV:+[${Red}$(echo -n "TERRAFORM: ";echo $TERRAFORM_ENV)$Color_Off]\n}${NVM_BIN:+[${Red}$(echo -n "node: ";nvm current)$Color_Off]\n}${GEM_HOME:+[${Cyan}$(rvm-prompt i v p g)$Color_Off]\n}${AWS_PROFILE:+[${Yellow}$(echo -n "AWS: ";echo $AWS_PROFILE)$Color_Off]\n}" "\h:\W \u\\\$ " "[%s $(get_sha)]\n";set_titlebar "$USER@${HOSTNAME%%.*} $(basename $PWD)"' 
 {% endraw %}

@@ -36,6 +36,117 @@
     - install-snap-packages
 
 #
+# install nvm
+#
+
+- name: "get latest nvm"
+  uri:
+    url: "https://github.com/creationix/nvm/releases/latest"
+    return_contents: no
+  register: output_result
+
+
+- name: "get latest version"
+  set_fact:
+    nvm_latest: "{{ output_result.url | basename }}"
+
+- debug:
+    var: nvm_latest
+
+- name: get stats on nvm
+  become: no
+  stat: path="~/.nvm/nvm.sh"
+  register: nvm_stat
+
+
+- name: "download nvm script"
+  get_url:
+    dest: "/usr/local/src/nvm-{{ nvm_latest }}-install.sh"
+    url: https://raw.githubusercontent.com/creationix/nvm/{{ nvm_latest }}/install.sh
+  when: not nvm_stat.stat.exists
+
+- name: run nvm script
+  command: "bash /usr/local/src/nvm-{{ nvm_latest }}-install.sh"
+  become: no
+  when: not nvm_stat.stat.exists
+
+- name: "add nvm to ~/.bashrc"
+  lineinfile:
+    dest: "~/.bashrc"
+    line: "source ~/.nvm/nvm.sh"
+  become: no
+
+
+#
+# install postman
+#
+
+- name: "download Postman"
+  uri:
+    url: "https://dl.pstmn.io/download/latest/linux?arch=64"
+    method: HEAD
+    follow_redirects: safe
+  register: head_query 
+
+#
+#         "content_disposition": "attachment; filename=Postman-linux-x64-6.1.4.tar.gz", 
+#
+- set_fact:
+    postman_filename: "{{ head_query.content_disposition | regex_replace(ver_regex, '\\1') }}"
+  vars:
+    ver_regex: '^attachment; filename=(.*)$'
+
+- debug:
+    var: postman_filename
+
+- name: "check for installed version file"
+  stat:
+    path: "/usr/local/src/{{ postman_filename }}"
+  register: installed_version
+
+
+- name: "download Postman"
+  get_url:
+    url: "https://dl.pstmn.io/download/latest/linux?arch=64"
+    dest: "/usr/local/src"
+    validate_certs: yes
+  register: new_postman 
+  when: not installed_version.stat.exists
+
+- name: "Extract and install postman"
+  unarchive:
+    src: "{{ postman_src_path }}"
+    dest: "/usr/local/"
+    owner: root
+    group: root
+  when: new_postman.changed
+
+- name: "install Postman link"
+  become: yes
+  file:
+    state: link
+    force: yes
+    src: '/usr/local/Postman/app/Postman'
+    dest: '/usr/local/bin/Postman'
+    owner: root
+    group: root
+    mode: 'u=rwx,go=rx'
+
+- name: "create desktop icon"
+  copy:
+    dest: "/usr/share/applications/Postman.desktop"
+    content: |
+      [Desktop Entry]
+      Encoding=UTF-8
+      Name=Postman
+      Exec=/usr/local/bin/Postman
+      Icon=/usr/local/Postman/app/resources/app/assets/icon.png
+      Terminal=false
+      Type=Application
+      Categories=Development;
+
+
+#
 # Install SQL Operations Center
 #
 - name: "get SQLOS latest version"
@@ -55,6 +166,9 @@
 - debug: var=sql_operations_studio_url
 
 
+#
+#  Install ngrok
+#
 - name: "Download ngrok"
   get_url:
     url: https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
@@ -96,6 +210,7 @@
     dest: /usr/local/bin
     copy: no
 
+
 #
 # install packer
 #
@@ -124,7 +239,9 @@
     dest: /usr/local/bin
     copy: no
 
-
+#
+# install vagrant latest
+#
 - name: "get vagrant latest version"
   uri:
     url: "https://releases.hashicorp.com/vagrant/index.json"
@@ -294,8 +411,7 @@
     - 'deb [arch=amd64] https://packages.cloud.google.com/apt cloud-sdk-{{ ansible_distribution_release }} main'
     - 'deb [arch=amd64] https://deb.nodesource.com/node_{{ nodejs_version }} {{ ansible_distribution_release }} main'
     - 'deb [arch=amd64] http://ppa.launchpad.net/mozillateam/firefox-next/ubuntu {{ ansible_distribution_release }} main'
-    # 'deb-src https://deb.nodesource.com/node_{{ nodejs_version }} {{ ansible_distribution_release }} main'
-    # 'deb [arch=amd64] https://riot.im/packages/debian/ {{ ansible_distribution_release }} main'
+    - 'deb [arch=amd64] https://riot.im/packages/debian/ {{ ansible_distribution_release }} main'
 
   register: repos 
 
@@ -308,7 +424,6 @@
   with_items: 
     - docker-ce
     - dkms
-    - virtualbox-5.2
     - google-chrome-stable
     - cryptomator
     - insync
@@ -322,6 +437,7 @@
     - mssql-tools # microsoft
     - unixodbc-dev # microsoft
     # riot-web
+    # virtualbox-5.2
 
 
 - name: "Deploy Debian: Install virtualenvwrapper"

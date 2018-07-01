@@ -2,6 +2,9 @@
 
 # mongo
 # https://download.studio3t.com/studio-3t/linux/2018.2.4/studio-3t-linux-x64.tar.gz
+# https://studio3t.com/download-thank-you/?OS=x64
+
+
 # curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && chmod +x minikube
 # curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod +x kubectl
 #  https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
@@ -11,7 +14,7 @@
 
 # https://docs.microsoft.com/en-gb/sql/sql-operations-studio/download
 
-- hosts: all:localhost
+- hosts: all
   gather_facts: no
 
   roles:
@@ -48,14 +51,14 @@
       - pre-commit         # https://pre-commit.com/
       - speedtest_cli
       - python-openstackclient
-      # python-pthon-PROJECTclient  # https://docs.openstack.org/newton/user-guide/common/cli-install-openstack-command-line-clients.html
       - jmespath-terminal  # jpterm https://github.com/jmespath/jmespath.terminal
       - cheat              # https://github.com/chrisallenlane/cheaf
+      # python-pthon-PROJECTclient  # https://docs.openstack.org/newton/user-guide/common/cli-install-openstack-command-line-clients.html
 
     npm_modules:
-      - 'jsonlint'
-      - 'jslint'
-      - 'serverless'
+      - jsonlint
+      - jslint
+      - serverless
 
     vagrant_plugins:
       - vagrant-hosts   # https://github.com/oscar-stack/vagrant-hosts
@@ -79,14 +82,51 @@
       - lxd
 
 
-
   tasks:
-    - include_tasks: deploy-debian.yml
-      become: yes
-      when: ansible_os_family == 'Debian'
-      tags: package
+    #- include_tasks: deploy-debian.yml
+    #  become: yes
+    #  when: ansible_os_family == 'Debian'
+    #  tags: package
+
+    #
+    # Get latest assume
+    #
+    - name: "get latest AWS assume role"
+      uri:
+        url: "https://github.com/s3than/assume/releases/latest"
+        return_contents: no 
+      register: output_result
 
 
+    - name: "get latest version"
+      set_fact:
+        assume_latest: "{{ output_result.url | basename }}"
+
+    - debug:
+        var: assume_latest
+
+    - name: "Download helm"
+      get_url:
+        url: "https://github.com/s3than/assume/releases/download/{{ assume_latest }}/assume_{{ assume_latest }}_linux_amd64.zip"
+        dest: "/usr/local/src/assume_{{ assume_latest }}.zip"
+
+    - name: "Extract and install heml"
+      unarchive:
+        src: /usr/local/src/assume_{{ assume_latest }}.zip
+        dest: /usr/local/src
+        copy: no
+
+    - name: "copy to bin directory"
+      copy:
+        src: /usr/local/src/assume_{{ assume_latest }}_linux_amd64
+        dest: /usr/local/bin/assume
+        mode: 0755
+
+    - meta: end_play
+
+    #
+    # Get latest helm
+    #
     - name: "get latest kubunetes heml verion"
       uri:
         url: "https://github.com/kubernetes/helm/releases/latest"
@@ -119,7 +159,7 @@
         mode: 0755
 
 
-
+    #
     # get latest kops URL"
     #
     - name: "get kops latest version"
