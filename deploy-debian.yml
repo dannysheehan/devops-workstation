@@ -402,7 +402,6 @@
     repo: "{{ item }}"
     state: present
   with_items:
-    - 'deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian {{ ansible_distribution_release }} contrib'
     - 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
     - 'deb [arch=amd64] https://packages.microsoft.com/ubuntu/16.04/prod {{ ansible_distribution_release }} main'
     - 'ppa:sebastian-stenzel/cryptomator'
@@ -421,6 +420,8 @@
     state: present
     update_cache: yes
     cache_valid_time: 3600
+  environment:
+          ACCEPT_EULA: 'y'
   with_items: 
     - docker-ce
     - dkms
