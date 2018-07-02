@@ -14,7 +14,7 @@
 
 # https://docs.microsoft.com/en-gb/sql/sql-operations-studio/download
 
-- hosts: all
+- hosts: all:localhost
   gather_facts: no
 
   roles:
@@ -83,10 +83,10 @@
 
 
   tasks:
-    #- include_tasks: deploy-debian.yml
-    #  become: yes
-    #  when: ansible_os_family == 'Debian'
-    #  tags: package
+    - include_tasks: deploy-debian.yml
+      become: yes
+      when: ansible_os_family == 'Debian'
+      tags: package
 
     #
     # Get latest assume
