@@ -41,6 +41,7 @@
       - ansible-lint # https://github.com/willthames/ansible-lint
       - awscli   # http://docs.aws.amazon.com/cli/latest/userguide/getting-help.html
       - boto3    # https://boto3.readthedocs.io/en/latest/guide/quickstart.html
+      - jmespath
       - ec2-ssh
       - docker-compose
       - httpstat
@@ -70,15 +71,15 @@
       - vagrant-openstack-provider
 
     snap_classic_packages:
+      - skype
+      - slack
       - goland
-      # phpstorm
-      # pycharm-professional
-      # skype
-      # slack
+      - phpstorm
+      - pycharm-professional
 
-    snap_packages: []
-      # spotify
-      # vlc
+    snap_packages:
+      - spotify
+      - vlc
       # lxd
 
 
@@ -87,6 +88,37 @@
       become: yes
       when: ansible_os_family == 'Debian'
       tags: package
+
+    #
+    # Get latest minikube
+    #
+    - name: "get latest minikube verion"
+      uri:
+        url: "https://github.com/kubernetes/minikube/releases/latest"
+        return_contents: no 
+      register: output_result
+
+
+    - name: "get latest version"
+      set_fact:
+        minikube_latest: "{{ output_result.url | basename }}"
+
+    - debug:
+        var: minikube_latest
+
+
+    - name: "Download latest minikube kvm2 driver"
+      get_url:
+        url: "https://github.com/kubernetes/minikube/releases/download/{{ minikube_latest }}/docker-machine-driver-kvm2"
+        dest: "/usr/bin/docker-machine-driver-kvm2"
+        mode: 0755
+
+    - name: "Download minikube latest"
+      get_url:
+        url: "https://github.com/kubernetes/minikube/releases/download/v0.28.0/minikube-linux-amd64"
+        dest: "/usr/local/bin/minikube"
+        mode: 0755
+
 
     #
     # Get latest assume
@@ -105,12 +137,12 @@
     - debug:
         var: assume_latest
 
-    - name: "Download helm"
+    - name: "Download assume"
       get_url:
         url: "https://github.com/s3than/assume/releases/download/{{ assume_latest }}/assume_{{ assume_latest }}_linux_amd64.zip"
         dest: "/usr/local/src/assume_{{ assume_latest }}.zip"
 
-    - name: "Extract and install heml"
+    - name: "Extract and install assume"
       unarchive:
         src: /usr/local/src/assume_{{ assume_latest }}.zip
         dest: /usr/local/src
@@ -122,7 +154,6 @@
         dest: /usr/local/bin/assume
         mode: 0755
 
-    - meta: end_play
 
     #
     # Get latest helm
@@ -274,3 +305,5 @@
         - libvirtd
         - docker
         # lxd
+
+  handlers:
