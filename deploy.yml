@@ -71,6 +71,7 @@
       - vagrant-openstack-provider
 
     snap_classic_packages:
+      - powershell
       - skype
       - slack
       - goland
@@ -139,18 +140,17 @@
 
     - name: "Download assume"
       get_url:
-        url: "https://github.com/s3than/assume/releases/download/{{ assume_latest }}/assume_{{ assume_latest }}_linux_amd64.zip"
-        dest: "/usr/local/src/assume_{{ assume_latest }}.zip"
+        url: "https://github.com/s3than/assume/releases/download/{{ assume_latest }}/assume_{{ assume_latest }}_linux_amd64.tgz"
+        dest: "/usr/local/src/assume_{{ assume_latest }}.tgz"
 
     - name: "Extract and install assume"
       unarchive:
-        src: /usr/local/src/assume_{{ assume_latest }}.zip
+        src: /usr/local/src/assume_{{ assume_latest }}.tgz
         dest: /usr/local/src
-        copy: no
 
     - name: "copy to bin directory"
       copy:
-        src: /usr/local/src/assume_{{ assume_latest }}_linux_amd64
+        src: /usr/local/src/assume
         dest: /usr/local/bin/assume
         mode: 0755
 
@@ -302,7 +302,7 @@
         groups: "{{ item }}"
         append: yes
       with_items:
-        - libvirtd
+        - libvirt
         - docker
         # lxd
 
