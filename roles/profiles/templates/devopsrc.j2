@@ -28,7 +28,7 @@ export PYENV_VIRTUALENV_DISABLE_PROMPT=1
 
 export EC2_INI_PATH=/etc/ansible/ec2.ini 
 
-export ANSIBLE_VAULT_PASSWORD_FILE=~/.ssh/.vault_pass.txt
+# export ANSIBLE_VAULT_PASSWORD_FILE=~/.ssh/.vault_pass.txt
 
 WEATHER="Brisbane?m"
 
@@ -297,8 +297,6 @@ elif [ -s ~/.git-prompt.sh ];then
 elif which wget > /dev/null && wget -q $GPROMPT -O ~/.git-prompt.sh
 then
   source ~/.git-prompt.sh
-else
-  return
 fi
 
 # https://blog.shichao.io/2014/10/01/setup_virtualenvwrapper_with_pyenv_using_pyenv_virtualenvwrapper.html
@@ -315,23 +313,18 @@ if which pyenv > /dev/null 2>&1; then
 
   if pyenv commands | egrep -q "^virtualenvwrapper"; then
     pyenv virtualenvwrapper
-  else
-    return
   fi
 elif [ -s /usr/bin/virtualenvwrapper.sh ];then
   source /usr/bin/virtualenvwrapper.sh
 elif [ -s /usr/local/bin/virtualenvwrapper.sh ];then
   source /usr/local/bin/virtualenvwrapper.sh
-else
-  # SUGGEST: install python-pip then sudo -i pip install virtualenv virtualenvwrapper
-  return
 fi
 
 
 export PATH="$PATH:$HOME/.rvm/bin" 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" 
 
-export PATH=$PATH:~/.local/bin
+export PATH=$PATH:~/.local/bin:/usr/local/go/bin
 
 # pip install --user --upgrade httpstat
 # pip install --user --upgrade googler
@@ -359,6 +352,10 @@ GIT_PS1_SHOWCOLORHINTS=1
 GIT_PS1_SHOWSTASHSTATE=1
 GIT_PS1_SHOWUPSTREAM="auto"
 
+if which aws_completer > /dev/null 2>&1; then
+  complete -C $(which aws_completer) aws
+fi
+
 enter_directory(){
   if [ "$PWD" != "$PREV_PWD" ]; then
     PREV_PWD="$PWD";
@@ -368,19 +365,33 @@ enter_directory(){
       echo "Reverting to nvm default version."
       nvm use default
     fi
+    if [ -f ".terraform/environment" ]; then
+      TERRAFORM_ENV=$(cat ".terraform/environment")
+    fi
   fi
 }
 
+
 set_prompt_vars(){
- if [ -f ".terraform/environment" ]; then
-   TERRAFORM_ENV=$(cat ".terraform/environment")
- fi
+  if which aws > /dev/null 2>&1; then
+    age=$(stat -c %Y ~/.aws/credentials)
+    now=$(date +"%s")
+    if (( (now - age) < 30 ));then
+      AWS_STS=$(aws sts get-caller-identity --query Arn --output text 2> /dev/null)
+      if [ $? -eq 0 ];then
+        AWS_STS_ROLE=$(echo $AWS_STS  | cut -d\/ -f2)
+        AWS_STS_ACCOUNT=$(echo $AWS_STS  | cut -d \: -f5)
+      fi
+    fi
+  fi
+  if which assume > /dev/null 2>&1; then
+    AWS_STS_ACCOUNT=""
+    AWS_STS_ROLE=$(assume --dt)
+  fi
 }
 
-if which aws_completer > /dev/null 2>&1; then
-  complete -C $(which aws_completer) aws
-fi
 
+PROMPT_COMMAND='enter_directory;set_prompt_vars; __git_ps1 "[${Yellow}$(echo -e code $?)$Color_Off]\n${AWS_STS_ROLE:+[${Purple}$(echo -n "AWS: ";echo $AWS_STS_ACCOUNT $AWS_STS_ROLE)$Color_Off]\n}${VIRTUAL_ENV:+[${Yellow}$(basename $VIRTUAL_ENV)$Color_Off]\n}${TERRAFORM_ENV:+[${Red}$(echo -n "TERRAFORM: ";echo $TERRAFORM_ENV)$Color_Off]\n}${NVM_BIN:+[${Red}$(echo -n "node: ";nvm current)$Color_Off]\n}${GEM_HOME:+[${Cyan}$(rvm-prompt i v p g)$Color_Off]\n}${AWS_PROFILE:+[${Yellow}$(echo -n "AWS: ";echo $AWS_PROFILE)$Color_Off]\n}" "\h:\W \u\\\$ " "[%s $(get_sha)]\n";set_titlebar "$USER@${HOSTNAME%%.*} $(basename $PWD)"'
 
-PROMPT_COMMAND='enter_directory;set_prompt_vars; __git_ps1 "[${Yellow}$(echo -e code $?)$Color_Off]\n${VIRTUAL_ENV:+[${Yellow}$(basename $VIRTUAL_ENV)$Color_Off]\n}${TERRAFORM_ENV:+[${Red}$(echo -n "TERRAFORM: ";echo $TERRAFORM_ENV)$Color_Off]\n}${NVM_BIN:+[${Red}$(echo -n "node: ";nvm current)$Color_Off]\n}${GEM_HOME:+[${Cyan}$(rvm-prompt i v p g)$Color_Off]\n}${AWS_PROFILE:+[${Yellow}$(echo -n "AWS: ";echo $AWS_PROFILE)$Color_Off]\n}" "\h:\W \u\\\$ " "[%s $(get_sha)]\n";set_titlebar "$USER@${HOSTNAME%%.*} $(basename $PWD)"' 
 {% endraw %}
+
