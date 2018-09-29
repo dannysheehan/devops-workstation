@@ -1,6 +1,7 @@
 ansible
 ansible-modules-hashivault
 jmespath
+molecule
 pre-commit
 ansible-lint
 yamllint

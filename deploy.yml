@@ -81,8 +81,8 @@
       - goland
       - phpstorm
       - pycharm-professional
-      # skype
       # slack
+      # skype
 
     snap_packages:
       - spotify
@@ -97,9 +97,50 @@
       tags:
         - package
 
+
+    #
+    # Get latest awless
+    #
+    - name: "get latest awless"
+      uri:
+        url: "https://github.com/wallix/awless/releases/latest"
+        return_contents: false
+      register: output_result
+
+
+    - name: "get latest version"
+      set_fact:
+        awless_latest: "{{ output_result.url | basename }}"
+
+    - debug:
+        var: awless_latest
+
+    - name: "Download awless"
+      get_url:
+        url: "https://github.com/wallix/awless/releases/download/{{ awless_latest }}/awless-linux-amd64.tar.gz"
+        dest: "/usr/local/src/awless_{{ awless_latest }}.tar.gz"
+
+    - name: "Extract and install awless"
+      unarchive:
+        src: /usr/local/src/awless_{{ awless_latest }}.tar.gz
+        dest: /usr/local/src
+
+    - name: "copy newest version of awless to bin directory"
+      copy:
+        src: /usr/local/src/awless
+        dest: /usr/local/bin/awless
+        mode: 0755
+
+    - name: "create autocomplete file"
+      copy:
+        content: |
+          awless completion bash
+        dest: /etc/bash_completion.d/awless
+
     #
     # Get the lates version of go
     #
+
     - name: "Download go"
       get_url:
         url: "https://dl.google.com/go/go{{ go_version}}.linux-amd64.tar.gz"
