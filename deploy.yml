@@ -1,4 +1,4 @@
---- # deployment of devops workstation
+---     # deployment of devops workstation
 
 # mongo
 # https://download.studio3t.com/studio-3t/linux/2018.2.4/studio-3t-linux-x64.tar.gz
@@ -14,17 +14,18 @@
 
 # https://docs.microsoft.com/en-gb/sql/sql-operations-studio/download
 
-- hosts: all:localhost
-  gather_facts: no
+- hosts: all
+  gather_facts: false
 
   roles:
     - profiles
 
 
-- hosts: localhost
-  become: yes
+- hosts: 127.0.0.1
+  become: true
 
   vars:
+    aws_region: us-east-1   # Cheapest region by default.
     # Set the version of Node.js to install ("0.12", "4.x", "5.x", "6.x", "8.x").
     # Version numbers from Nodesource: https://github.com/nodesource/distributions
     nodejs_version: "8.x"
@@ -33,15 +34,18 @@
 
     devops_user: "{{ lookup('env', 'USER') }}"
 
-    # Set to true to suppress the UID/GID switching when running 
-    # package scripts. If set explicitly to false, then installing as a 
+    # Set to true to suppress the UID/GID switching when running
+    # package scripts. If set explicitly to false, then installing as a
     # non-root user will fail.
     npm_config_unsafe_perm: "false"
 
     pip_modules:
-      - ansible-lint # https://github.com/willthames/ansible-lint
-      - awscli   # http://docs.aws.amazon.com/cli/latest/userguide/getting-help.html
-      - boto3    # https://boto3.readthedocs.io/en/latest/guide/quickstart.html
+      - ansible-lint    # https://github.com/willthames/ansible-lint
+      - awscli          # http://docs.aws.amazon.com/cli/latest/userguide/getting-help.html
+      - boto3           # https://boto3.readthedocs.io/en/latest/guide/quickstart.html
+      - boto
+      - virtualenv
+      - virtualenvwrapper
       - jmespath
       - ec2-ssh
       - docker-compose
@@ -53,6 +57,7 @@
       - pre-commit         # https://pre-commit.com/
       - speedtest_cli
       - python-openstackclient
+      - jmespath
       - jmespath-terminal  # jpterm https://github.com/jmespath/jmespath.terminal
       - cheat              # https://github.com/chrisallenlane/cheaf
       # python-pthon-PROJECTclient  # https://docs.openstack.org/newton/user-guide/common/cli-install-openstack-command-line-clients.html
@@ -63,9 +68,9 @@
       - serverless
 
     vagrant_plugins:
-      - vagrant-hosts   # https://github.com/oscar-stack/vagrant-hosts
+      - vagrant-hosts     # https://github.com/oscar-stack/vagrant-hosts
       - vagrant-vbox-snapshot
-      - vagrant-vbguest # required to install VirtualBox Guest Addtions into the Virtual Machine
+      - vagrant-vbguest   # required to install VirtualBox Guest Addtions into the Virtual Machine
       - vagrant-aws
       - vagrant-google
       - vagrant-libvirt
@@ -86,11 +91,15 @@
 
 
   tasks:
-    - include_tasks: deploy-debian.yml
-      become: yes
+    - import_tasks: deploy-debian.yml
+      become: true
       when: ansible_os_family == 'Debian'
-      tags: package
+      tags:
+        - package
 
+    #
+    # Get the lates version of go
+    #
     - name: "Download go"
       get_url:
         url: "https://dl.google.com/go/go{{ go_version}}.linux-amd64.tar.gz"
@@ -104,10 +113,15 @@
     #
     # Get latest assume
     #
+    - name: "set cheapest AWS region"
+      command: aws configure set region {{ aws_region }}
+      changed_when: false
+      check_mode: false
+
     - name: "get latest AWS assume role"
       uri:
         url: "https://github.com/s3than/assume/releases/latest"
-        return_contents: no 
+        return_contents: false
       register: output_result
 
 
@@ -120,12 +134,12 @@
 
     - name: "Download assume"
       get_url:
-        url: "https://github.com/s3than/assume/releases/download/{{ assume_latest }}/assume_{{ assume_latest }}_linux_amd64.tgz"
-        dest: "/usr/local/src/assume_{{ assume_latest }}.tgz"
+        url: "https://github.com/s3than/assume/releases/download/{{ assume_latest }}/assume_{{ assume_latest }}_linux_amd64.tar.gz"
+        dest: "/usr/local/src/assume_{{ assume_latest }}.tar.gz"
 
     - name: "Extract and install assume"
       unarchive:
-        src: /usr/local/src/assume_{{ assume_latest }}.tgz
+        src: /usr/local/src/assume_{{ assume_latest }}.tar.gz
         dest: /usr/local/src
 
     # developer keeps changing the location the assume command is located at.
@@ -133,7 +147,7 @@
       find:
         paths: /usr/local/src
         patterns: "assume"
-        recurse: yes
+        recurse: true
       register: assume_files
 
     - name: "Find latest"
@@ -153,7 +167,7 @@
     - name: "get latest minikube verion"
       uri:
         url: "https://github.com/kubernetes/minikube/releases/latest"
-        return_contents: no 
+        return_contents: false
       register: output_result
 
 
@@ -177,6 +191,26 @@
         dest: "/usr/local/bin/minikube"
         mode: 0755
 
+    #
+    # Get latest stable kubectl
+    #
+    - name: "get latest stable kubectl"
+      set_fact:
+        kubectl_stable: "{{ lookup('url', 'https://storage.googleapis.com/kubernetes-release/release/stable.txt', split_lines=False) | replace('\n', '') }}"
+
+    - debug:
+        var: kubectl_stable
+
+    - name: "Download kubectl"
+      get_url:
+        url: "https://storage.googleapis.com/kubernetes-release/release/{{ kubectl_stable }}/bin/linux/amd64/kubectl"
+        dest: "/usr/local/src/kubectl-{{ kubectl_stable }}"
+
+    - name: "copy to bin directory"
+      copy:
+        src: /usr/local/src/kubectl-{{ kubectl_stable }}
+        dest: /usr/local/bin/kubectl
+        mode: 0755
 
 
     #
@@ -185,7 +219,7 @@
     - name: "get latest kubunetes heml verion"
       uri:
         url: "https://github.com/kubernetes/helm/releases/latest"
-        return_contents: no 
+        return_contents: false
       register: output_result
 
 
@@ -199,13 +233,13 @@
     - name: "Download helm"
       get_url:
         url: "https://storage.googleapis.com/kubernetes-helm/helm-{{ helm_latest }}-linux-amd64.tar.gz"
-        dest: "/usr/local/src/latest-helm.tar.gz"
+        dest: "/usr/local/src/helm-{{ helm_latest }}.tar.gz"
 
     - name: "Extract and install heml"
       unarchive:
-        src: /usr/local/src/latest-helm.tar.gz
+        src: "/usr/local/src/helm-{{ helm_latest }}.tar.gz"
         dest: /usr/local/src
-        copy: no
+        copy: false
 
     - name: "copy to bin directory"
       copy:
@@ -222,18 +256,18 @@
         url: "https://api.github.com/repos/kubernetes/kops/releases/latest"
         method: GET
         body: JSON
-        return_contents: yes 
+        return_contents: true
       register: json_output
-      check_mode: no
+      check_mode: false
 
     - name: "Download kops"
       debug:
         msg: "{{ json_output.json.tag_name }}"
-    
-    - mame: "get download url for latest kops"
+
+    - name: "get download url for latest kops"
       set_fact:
         kops_url: "https://github.com/kubernetes/kops/releases/download/{{ json_output.json.tag_name }}/kops-linux-amd64"
-    
+
     - name: "Download kops"
       get_url:
         url: "{{ kops_url }}"
@@ -245,11 +279,11 @@
     # https://docs.npmjs.com/getting-started/installing-node
     # npm install npm@latest -g
 
-    - name: install extra system npm modules 
+    - name: install extra system npm modules
       npm:
         name: '{{ item }}'
         state: present
-        global: yes
+        global: true
       with_items:
         "{{ npm_modules }}"
       environment:
@@ -257,12 +291,12 @@
         NODE_PATH: "{{ npm_config_prefix }}/lib/node_modules"
         NPM_CONFIG_UNSAFE_PERM: "{{ npm_config_unsafe_perm }}"
         PATH: "{{ npm_config_prefix }}/bin:{{ ansible_env.PATH }}"
-      become: yes
+      become: true
       tags:
         - install-npm-packages
 
 
-    - name: install extra system pip modules 
+    - name: install extra system pip modules
       pip:
         name: '{{ item }}'
         state: present
@@ -270,7 +304,7 @@
         # extra_args: --user
       with_items:
         "{{ pip_modules }}"
-      become: yes
+      become: true
       tags:
         - install-pip-modules
 
@@ -278,15 +312,15 @@
     - name: "Upgrade existing installed vagrant plugins"
       command: "vagrant plugin update"
       register: vagrant_initial_plugins_list
-      changed_when: no
+      changed_when: false
       tags:
         - install-vagrant-plugins
 
     - name: "List installed vagrant plugins"
       command: "vagrant plugin list"
       register: vagrant_initial_plugins_list
-      changed_when: no
-      check_mode: no
+      changed_when: false
+      check_mode: false
       tags:
         - install-vagrant-plugins
 
@@ -302,8 +336,8 @@
 
     - name: "Clone netdata repo"
       git:
-        clone: yes
-        update: yes
+        clone: true
+        update: true
         repo: https://github.com/firehol/netdata.git
         dest: /usr/src/netdata
         version: master
@@ -311,20 +345,20 @@
 
     - name: "Installation"
       command: >
-        /usr/src/netdata/netdata-installer.sh 
+        /usr/src/netdata/netdata-installer.sh
            --dont-wait --libs-are-really-here
       args:
         chdir: /usr/src/netdata
-      when: gitupdate.changed
+      when: gitupdate is changed
       tags:
-        - skip_ansible_lint 
+        - skip_ansible_lint
 
 
     - name: "Add user to groups"
       user:
         name: "{{ devops_user }}"
         groups: "{{ item }}"
-        append: yes
+        append: true
       with_items:
         - libvirt
         - docker

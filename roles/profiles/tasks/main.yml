@@ -1,13 +1,13 @@
 ---
-# tasks to copy profile files   
+# tasks to copy profile files
 
 
 - name: copy profile files to users home directory
   template:
-    src="{{ item }}.j2"
-    dest="~/.{{ item }}"
+    src: "{{ item }}.j2"
+    dest: "~/.{{ item }}"
   tags:
-    - 'profiles'
+    - profiles
 
   with_items:
     - devopsrc
@@ -17,23 +17,25 @@
 
 - name: add devopsrc to .bashrc
   lineinfile:
-    create=yes
-    dest=~/.bashrc
-    line=". ~/.devopsrc"
+    create: true
+    dest: ~/.bashrc
+    line: ". ~/.devopsrc"
   tags:
-    - 'profiles'
+    - profiles
 
 - name: check if there is a .bash_profile
-  stat: path=~/.bash_profile
+  stat:
+    path: ~/.bash_profile
   register: file_dot_bash_profile
   tags:
-    - 'profiles'
+    - profiles
 
 - name: check if there is a .profile
-  stat: path=~/.profile
+  stat:
+    path: ~/.profile
   register: file_dot_profile
   tags:
-    - 'profiles'
+    - profiles
 
 - name: copy in a .profile if missing
   copy:
@@ -41,4 +43,4 @@
     dest: ~/.profile
   when: file_dot_profile.stat.exists == False
   tags:
-    - 'profiles'
+    - profiles
