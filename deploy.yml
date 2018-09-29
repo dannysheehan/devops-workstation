@@ -91,11 +91,11 @@
 
 
   tasks:
-    - import_tasks: deploy-debian.yml
-      become: true
-      when: ansible_os_family == 'Debian'
-      tags:
-        - package
+    #- import_tasks: deploy-debian.yml
+    #  become: true
+    #  when: ansible_os_family == 'Debian'
+    #  tags:
+    #    - package
 
 
     #
@@ -132,9 +132,14 @@
         mode: 0755
 
     - name: "create autocomplete file"
+      command: awless completion bash
+      register: awless_completion
+      changed_when: false
+      check_mode: false
+
+    - name: "create autocomplete file"
       copy:
-        content: |
-          awless completion bash
+        content: "{{ awless_completion.stdout }}"
         dest: /etc/bash_completion.d/awless
 
     #
