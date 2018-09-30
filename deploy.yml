@@ -22,7 +22,7 @@
 
 
 - hosts: localhost
-  become: yes
+  become: true
 
   vars:
     aws_region: us-east-1   # Cheapest region by default.
