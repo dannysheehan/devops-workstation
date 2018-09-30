@@ -21,7 +21,7 @@
     - profiles
 
 
-- hosts: 127.0.0.1
+- hosts: localhost
   become: true
 
   vars:
@@ -91,11 +91,11 @@
 
 
   tasks:
-    #- import_tasks: deploy-debian.yml
-    #  become: true
-    #  when: ansible_os_family == 'Debian'
-    #  tags:
-    #    - package
+    - import_tasks: deploy-debian.yml
+      become: true
+      when: ansible_os_family == 'Debian'
+      tags:
+        - package
 
 
     #
@@ -159,10 +159,18 @@
     #
     # Get latest assume
     #
-    - name: "set cheapest AWS region"
-      command: aws configure set region {{ aws_region }}
-      changed_when: false
-      check_mode: false
+    - name: "assume gives errors if credentials file does not exist" 
+      file:
+        path: "~/.aws"
+        state: directory
+      become: false
+
+    - name: "assume gives errors if credentials file does not exist" 
+      copy:
+        content: ""
+        dest: "~/.aws/credentials"
+        force: false
+      become: false
 
     - name: "get latest AWS assume role"
       uri:
