@@ -68,13 +68,14 @@
       - serverless
 
     vagrant_plugins:
-      - vagrant-hosts     # https://github.com/oscar-stack/vagrant-hosts
-      - vagrant-vbox-snapshot
-      - vagrant-vbguest   # required to install VirtualBox Guest Addtions into the Virtual Machine
       - vagrant-aws
       - vagrant-google
-      - vagrant-libvirt
       - vagrant-openstack-provider
+      # Add following if vbox or kvm virtualization enabled
+      # vagrant-vbguest   # required to install VirtualBox Guest Addtions into the Virtual Machine
+      # vagrant-hosts     # https://github.com/oscar-stack/vagrant-hosts
+      # vagrant-vbox-snapshot
+      # vagrant-libvirt
 
     snap_classic_packages:
       - powershell
@@ -414,8 +415,9 @@
         groups: "{{ item }}"
         append: true
       with_items:
-        - libvirt
         - docker
+        # uncomment if you are using kvm virtualisation
+        # libvirt
         # lxd
 
   handlers:
