@@ -76,11 +76,21 @@
     line: "source ~/.nvm/nvm.sh"
   become: false
 
+- name: "set default to system version of node"
+  lineinfile:
+    dest: "~/.bashrc"
+    line: "nvm alias default system"
+  become: false
+
+- name: "ensure we always go back to the default"
+  lineinfile:
+    dest: "~/.bashrc"
+    line: "nvm use default"
+  become: false
 
 #
 # install postman
 #
-
 - name: "download Postman"
   uri:
     url: "https://dl.pstmn.io/download/latest/linux?arch=64"
@@ -393,7 +403,6 @@
     - autogen
     - autoconf-archive
     - autoconf
-    - lvm2
     - libssl-dev
     - libmnl-dev
     - uuid-dev
@@ -420,6 +429,7 @@
     - gconf2-common
     - libgconf-2-4
     - libcanberra-gtk-module
+    # lvm2
 
 - name: "Deploy Debian: Add repos"
   apt_repository:

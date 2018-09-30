@@ -21,7 +21,7 @@
     - profiles
 
 
-- hosts: 127.0.0.1
+- hosts: localhost
   become: true
 
   vars:
@@ -68,13 +68,14 @@
       - serverless
 
     vagrant_plugins:
-      - vagrant-hosts     # https://github.com/oscar-stack/vagrant-hosts
-      - vagrant-vbox-snapshot
-      - vagrant-vbguest   # required to install VirtualBox Guest Addtions into the Virtual Machine
       - vagrant-aws
       - vagrant-google
-      - vagrant-libvirt
       - vagrant-openstack-provider
+      # Add following if vbox or kvm virtualization enabled
+      # vagrant-vbguest   # required to install VirtualBox Guest Addtions into the Virtual Machine
+      # vagrant-hosts     # https://github.com/oscar-stack/vagrant-hosts
+      # vagrant-vbox-snapshot
+      # vagrant-libvirt
 
     snap_classic_packages:
       - powershell
@@ -91,11 +92,11 @@
 
 
   tasks:
-    #- import_tasks: deploy-debian.yml
-    #  become: true
-    #  when: ansible_os_family == 'Debian'
-    #  tags:
-    #    - package
+    - import_tasks: deploy-debian.yml
+      become: true
+      when: ansible_os_family == 'Debian'
+      tags:
+        - package
 
 
     #
@@ -159,10 +160,18 @@
     #
     # Get latest assume
     #
-    - name: "set cheapest AWS region"
-      command: aws configure set region {{ aws_region }}
-      changed_when: false
-      check_mode: false
+    - name: "assume gives errors if credentials file does not exist"
+      file:
+        path: "~/.aws"
+        state: directory
+      become: false
+
+    - name: "assume gives errors if credentials file does not exist"
+      copy:
+        content: ""
+        dest: "~/.aws/credentials"
+        force: false
+      become: false
 
     - name: "get latest AWS assume role"
       uri:
@@ -406,8 +415,9 @@
         groups: "{{ item }}"
         append: true
       with_items:
-        - libvirt
         - docker
+        # uncomment if you are using kvm virtualisation
+        # libvirt
         # lxd
 
   handlers:

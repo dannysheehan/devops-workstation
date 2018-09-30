@@ -41,8 +41,6 @@ How to boot strap for the first time
 
 ```bash
 apt install ansible git
-git config --global user.name "User Name" $ git config --global core.editor "vi"
-git config --global user.email user@email.com
 echo 'localhost ansible_host=127.0.0.1 ansible_connection=local' >> /etc/ansible/hosts
 pip install -r requirements.txt
 
@@ -52,6 +50,16 @@ ansible -l localhost deploy.yml --ask-become
 ALTERNATIVE: You can use bootstrap.sh to install the git and ansible package
 
 `bootstrap.yml` is included to help you setup servers that aren't configured for ansible playbooks to be deployed to.
+
+If you want to make code changes, take advantage of pre-commit linting
+
+```bash
+git config --global user.name "User Name" $ git config --global core.editor "vi"
+git config --global user.email user@email.com
+pre-commit install
+pre-commit autoupdate
+pre-commit run --all-files
+```
 
 ## .bashrc
 
