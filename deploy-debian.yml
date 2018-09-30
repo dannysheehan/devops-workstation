@@ -393,7 +393,6 @@
     - autogen
     - autoconf-archive
     - autoconf
-    - lvm2
     - libssl-dev
     - libmnl-dev
     - uuid-dev
@@ -420,6 +419,7 @@
     - gconf2-common
     - libgconf-2-4
     - libcanberra-gtk-module
+    # lvm2
 
 - name: "Deploy Debian: Add repos"
   apt_repository:
