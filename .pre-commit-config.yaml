@@ -50,12 +50,12 @@ repos:
       - id: jshint
 
   # Does not work on windows
-  #- repo: https://github.com/willthames/ansible-lint.git
-  #  sha: v3.4.23
-  #  hooks:
-  #    - id: ansible-lint
-  #      files: \.(yaml|yml)$
-  #      args: [
-  #        "--exclude=roles",
-  #        "--exclude=.travis.yml"
-  #      ]
+  - repo: https://github.com/willthames/ansible-lint.git
+    sha: v3.4.23
+    hooks:
+      - id: ansible-lint
+        files: \.(yaml|yml)$
+        args: [
+          "--exclude=roles",
+          "--exclude=.travis.yml"
+        ]

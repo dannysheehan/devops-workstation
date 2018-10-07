@@ -9,6 +9,49 @@
 # sudo apt install oracle-java10-set-default
 
 
+#
+# Install jx
+#
+- name: "get Jenkins jx latest version"
+  uri:
+    url: "https://api.github.com/repos/jenkins-x/jx/releases"
+    method: GET
+    body: JSON
+    return_contents: false
+  register: json_output
+  check_mode: false
+
+- name: "get version url"
+  set_fact:
+    jenkinsx_version: "{{ json_output.json | json_query(version_qry) }}"
+  vars:
+    version_qry: "[0].tag_name"
+
+- debug:
+    var: jenkinsx_version
+
+- name: "Download Jenkinsx"
+  get_url:
+    url: "https://github.com/jenkins-x/jx/releases/download/{{ jenkinsx_version }}/jx-linux-amd64.tar.gz"
+    dest: "/usr/local/src/{{ jenkinsx_version }}_jx.tar.gz"
+
+- name: "Extract and install Jenkinsx"
+  unarchive:
+    src: /usr/local/src/{{ jenkinsx_version }}_jx.tar.gz
+    dest: /usr/local/bin
+    copy: false
+
+- name: "create jx completion file"
+  command: jx completion bash
+  register: autocompletion
+  changed_when: false
+  check_mode: false
+
+- name: "create autocomplete file"
+  copy:
+    content: "{{ autocompletion.stdout }}"
+    dest: /etc/bash_completion.d/jx
+
 - name: "List installed snap packages"
   command: snap list
   register: snap_packages_list
@@ -154,7 +197,6 @@
       Type=Application
       Categories=Development;
 
-
 #
 # Install SQL Operations Center
 #
@@ -167,12 +209,19 @@
   register: json_output
   check_mode: false
 
-- name: "get download url"
+- name: "get version url"
   set_fact:
-    sql_operations_studio_url: "{{ json_output.json | json_query(download_qry) }}"
+    sqlos_version: "{{ json_output.json | json_query(version_qry) }}"
   vars:
-    download_qry: "[0].assets[0].browser_download_url"
-- debug: var=sql_operations_studio_url
+    version_qry: "[0].tag_name"
+
+- debug:
+    var: sqlos_version
+
+- name: "Download Jenkinsx"
+  get_url:
+    url: "https://github.com/Microsoft/azuredatastudio/releases/download/{{ sqlos_version }}/azuredatastudio-linux-{{ sqlos_version }}.deb"
+    dest: "/usr/local/src/azuuredatastudio-{{ sqlos_version }}.deb"
 
 
 #
@@ -225,6 +274,11 @@
     dest: /usr/local/bin
     copy: false
 
+- name: "create autocomplete file"
+  copy:
+    content: |
+      complete -C /usr/local/bin/terraform terraform
+    dest: /etc/bash_completion.d/terraform
 
 #
 # install packer
@@ -302,7 +356,7 @@
   with_items:
     - 'https://release.gitkraken.com/linux/gitkraken-amd64.deb'
     - '{{ vagrant_url }}'
-    - '{{ sql_operations_studio_url }}'
+    - '/usr/local/src/azuuredatastudio-{{ sqlos_version }}.deb'
 
 
 - name: "Deploy Debian: Ensure apt-transport-https is installed"
@@ -447,8 +501,7 @@
     - 'deb [arch=amd64] http://ppa.launchpad.net/mozillateam/firefox-next/ubuntu {{ ansible_distribution_release }} main'
     - 'deb [arch=amd64] https://riot.im/packages/debian/ {{ ansible_distribution_release }} main'
     - 'ppa:sebastian-stenzel/cryptomator'
-    # 'deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian {{ ansible_distribution_release }} contrib'
-
+    - 'deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian {{ ansible_distribution_release }} contrib'
   register: repos
 
 - name: "Deploy Debian: install repo packages"
@@ -475,8 +528,7 @@
     - pritunl-client-electron
     - riot-web
     - cryptomator
-    # powershell-preview # microsoft
-    # virtualbox-5.2
+    - virtualbox-5.2
 
 
 - name: "Deploy Debian: Install other user packages"
@@ -533,7 +585,3 @@
   with_items:
     - yubioath-desktop
     - yubikey-personalization-gui
-
-# sudo usermod -a -G libvirtd $(whoami)
-# sudo usermod -a -G docker $(whoami)
-# sudo usermod -a -G lxd $(whoami)

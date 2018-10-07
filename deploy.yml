@@ -20,7 +20,6 @@
   roles:
     - profiles
 
-
 - hosts: localhost
   become: true
 
@@ -72,10 +71,10 @@
       - vagrant-google
       - vagrant-openstack-provider
       # Add following if vbox or kvm virtualization enabled
-      # vagrant-vbguest   # required to install VirtualBox Guest Addtions into the Virtual Machine
-      # vagrant-hosts     # https://github.com/oscar-stack/vagrant-hosts
-      # vagrant-vbox-snapshot
-      # vagrant-libvirt
+      - vagrant-vbguest   # required to install VirtualBox Guest Addtions into the Virtual Machine
+      - vagrant-hosts     # https://github.com/oscar-stack/vagrant-hosts
+      - vagrant-vbox-snapshot
+      - vagrant-libvirt
 
     snap_classic_packages:
       - powershell
@@ -90,14 +89,12 @@
       - vlc
       # lxd
 
-
   tasks:
     - import_tasks: deploy-debian.yml
       become: true
       when: ansible_os_family == 'Debian'
       tags:
         - package
-
 
     #
     # Get latest awless
@@ -108,11 +105,9 @@
         return_contents: false
       register: output_result
 
-
     - name: "get latest version"
       set_fact:
         awless_latest: "{{ output_result.url | basename }}"
-
     - debug:
         var: awless_latest
 
@@ -146,7 +141,6 @@
     #
     # Get the lates version of go
     #
-
     - name: "Download go"
       get_url:
         url: "https://dl.google.com/go/go{{ go_version}}.linux-amd64.tar.gz"
@@ -189,32 +183,14 @@
 
     - name: "Download assume"
       get_url:
-        url: "https://github.com/s3than/assume/releases/download/{{ assume_latest }}/assume_{{ assume_latest }}_linux_amd64.tar.gz"
-        dest: "/usr/local/src/assume_{{ assume_latest }}.tar.gz"
-
-    - name: "Extract and install assume"
-      unarchive:
-        src: /usr/local/src/assume_{{ assume_latest }}.tar.gz
-        dest: /usr/local/src
-
-    # developer keeps changing the location the assume command is located at.
-    - name: "Find the assume command"
-      find:
-        paths: /usr/local/src
-        patterns: "assume"
-        recurse: true
-      register: assume_files
-
-    - name: "Find latest"
-      set_fact:
-        assume_file: "{{ assume_files.files | sort(attribute='mtime',reverse=true) | first }}"
+        url: "https://github.com/s3than/assume/releases/download/{{ assume_latest }}/assume-linux-amd64"
+        dest: "/usr/local/src/assume_{{ assume_latest }}"
 
     - name: "copy newest version of assume to bin directory"
       copy:
-        src: "{{ assume_file.path }}"
+        src: "/usr/local/src/assume_{{ assume_latest }}"
         dest: "/usr/local/bin/assume"
         mode: 0755
-
 
     #
     # Get latest minikube
@@ -225,14 +201,11 @@
         return_contents: false
       register: output_result
 
-
     - name: "get latest version"
       set_fact:
         minikube_latest: "{{ output_result.url | basename }}"
-
     - debug:
         var: minikube_latest
-
 
     - name: "Download latest minikube kvm2 driver"
       get_url:
@@ -245,6 +218,17 @@
         url: "https://github.com/kubernetes/minikube/releases/download/v0.28.0/minikube-linux-amd64"
         dest: "/usr/local/bin/minikube"
         mode: 0755
+
+    - name: "create autocomplete file"
+      command: minikube completion bash
+      register: autocompletion
+      changed_when: false
+      check_mode: false
+
+    - name: "create autocomplete file"
+      copy:
+        content: "{{ autocompletion.stdout }}"
+        dest: /etc/bash_completion.d/minikube
 
     #
     # Get latest stable kubectl
@@ -267,6 +251,16 @@
         dest: /usr/local/bin/kubectl
         mode: 0755
 
+    - name: "create kubectl file"
+      command: kubectl completion bash
+      register: autocompletion
+      changed_when: false
+      check_mode: false
+
+    - name: "create autocomplete file"
+      copy:
+        content: "{{ autocompletion.stdout }}"
+        dest: /etc/bash_completion.d/kubectl
 
     #
     # Get latest helm
@@ -302,6 +296,16 @@
         dest: /usr/local/bin/helm
         mode: 0755
 
+    - name: "create helm completion file"
+      command: helm completion bash
+      register: autocompletion
+      changed_when: false
+      check_mode: false
+
+    - name: "create autocomplete file"
+      copy:
+        content: "{{ autocompletion.stdout }}"
+        dest: /etc/bash_completion.d/helm
 
     #
     # get latest kops URL"
@@ -329,11 +333,20 @@
         dest: "/usr/local/bin/kops"
         mode: 0755
 
+    - name: "create kops completion file"
+      command: kops completion bash
+      register: autocompletion
+      changed_when: false
+      check_mode: false
+
+    - name: "create autocomplete file"
+      copy:
+        content: "{{ autocompletion.stdout }}"
+        dest: /etc/bash_completion.d/kops
 
     # name: ensue we have latest npm version
     # https://docs.npmjs.com/getting-started/installing-node
     # npm install npm@latest -g
-
     - name: install extra system npm modules
       npm:
         name: '{{ item }}'
@@ -350,7 +363,6 @@
       tags:
         - install-npm-packages
 
-
     - name: install extra system pip modules
       pip:
         name: '{{ item }}'
@@ -362,7 +374,6 @@
       become: true
       tags:
         - install-pip-modules
-
 
     - name: "Upgrade existing installed vagrant plugins"
       command: "vagrant plugin update"
@@ -388,7 +399,6 @@
       tags:
         - install-vagrant-plugins
 
-
     - name: "Clone netdata repo"
       git:
         clone: true
@@ -408,7 +418,6 @@
       tags:
         - skip_ansible_lint
 
-
     - name: "Add user to groups"
       user:
         name: "{{ devops_user }}"
@@ -417,7 +426,7 @@
       with_items:
         - docker
         # uncomment if you are using kvm virtualisation
-        # libvirt
+        - libvirt
         # lxd
 
   handlers:
