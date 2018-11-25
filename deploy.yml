@@ -71,10 +71,10 @@
       - vagrant-google
       - vagrant-openstack-provider
       # Add following if vbox or kvm virtualization enabled
-      - vagrant-vbguest   # required to install VirtualBox Guest Addtions into the Virtual Machine
+      # vagrant-vbguest   # required to install VirtualBox Guest Addtions into the Virtual Machine
       - vagrant-hosts     # https://github.com/oscar-stack/vagrant-hosts
-      - vagrant-vbox-snapshot
-      - vagrant-libvirt
+      # vagrant-vbox-snapshot
+      # vagrant-libvirt
 
     snap_classic_packages:
       - powershell
@@ -90,53 +90,12 @@
       # lxd
 
   tasks:
-    - import_tasks: deploy-debian.yml
-      become: true
-      when: ansible_os_family == 'Debian'
-      tags:
-        - package
+    #- import_tasks: deploy-debian.yml
+    #  become: true
+    #  when: ansible_os_family == 'Debian'
+    #  tags:
+    #    - package
 
-    #
-    # Get latest awless
-    #
-    - name: "get latest awless"
-      uri:
-        url: "https://github.com/wallix/awless/releases/latest"
-        return_contents: false
-      register: output_result
-
-    - name: "get latest version"
-      set_fact:
-        awless_latest: "{{ output_result.url | basename }}"
-    - debug:
-        var: awless_latest
-
-    - name: "Download awless"
-      get_url:
-        url: "https://github.com/wallix/awless/releases/download/{{ awless_latest }}/awless-linux-amd64.tar.gz"
-        dest: "/usr/local/src/awless_{{ awless_latest }}.tar.gz"
-
-    - name: "Extract and install awless"
-      unarchive:
-        src: /usr/local/src/awless_{{ awless_latest }}.tar.gz
-        dest: /usr/local/src
-
-    - name: "copy newest version of awless to bin directory"
-      copy:
-        src: /usr/local/src/awless
-        dest: /usr/local/bin/awless
-        mode: 0755
-
-    - name: "create autocomplete file"
-      command: awless completion bash
-      register: awless_completion
-      changed_when: false
-      check_mode: false
-
-    - name: "create autocomplete file"
-      copy:
-        content: "{{ awless_completion.stdout }}"
-        dest: /etc/bash_completion.d/awless
 
     #
     # Get the lates version of go
@@ -308,6 +267,85 @@
         dest: /etc/bash_completion.d/helm
 
     #
+    # Get latest skaffold
+    #
+    - name: "get latest skaffold"
+      uri:
+        url: "https://github.com/GoogleContainerTools/skaffold/releases/latest"
+        return_contents: false
+      register: output_result
+
+    - name: "get latest version"
+      set_fact:
+        skaffold_latest: "{{ output_result.url | basename }}"
+    - debug:
+        var: skaffold_latest
+
+    - name: "Download skaffold"
+      get_url:
+        url: "https://github.com/GoogleContainerTools/skaffold/releases/download/{{ skaffold_latest }}/skaffold-linux-amd64"
+        dest: "/usr/local/src/skaffold_{{ skaffold_latest }}"
+
+    - name: "copy newest version of awless to bin directory"
+      copy:
+        src: /usr/local/src/skaffold_{{ skaffold_latest }}
+        dest: /usr/local/bin/skaffold
+        mode: 0755
+
+    - name: "create autocomplete file"
+      command: skaffold completion bash
+      register: skaffold_completion
+      changed_when: false
+      check_mode: false
+
+    - name: "create autocomplete file"
+      copy:
+        content: "{{ skaffold_completion.stdout }}"
+        dest: /etc/bash_completion.d/skaffold
+
+    #
+    # Get latest awless
+    #
+    - name: "get latest awless"
+      uri:
+        url: "https://github.com/wallix/awless/releases/latest"
+        return_contents: false
+      register: output_result
+
+    - name: "get latest version"
+      set_fact:
+        awless_latest: "{{ output_result.url | basename }}"
+    - debug:
+        var: awless_latest
+
+    - name: "Download awless"
+      get_url:
+        url: "https://github.com/wallix/awless/releases/download/{{ awless_latest }}/awless-linux-amd64.tar.gz"
+        dest: "/usr/local/src/awless_{{ awless_latest }}.tar.gz"
+
+    - name: "Extract and install awless"
+      unarchive:
+        src: /usr/local/src/awless_{{ awless_latest }}.tar.gz
+        dest: /usr/local/src
+
+    - name: "copy newest version of awless to bin directory"
+      copy:
+        src: /usr/local/src/awless
+        dest: /usr/local/bin/awless
+        mode: 0755
+
+    - name: "create autocomplete file"
+      command: awless completion bash
+      register: awless_completion
+      changed_when: false
+      check_mode: false
+
+    - name: "create autocomplete file"
+      copy:
+        content: "{{ awless_completion.stdout }}"
+        dest: /etc/bash_completion.d/awless
+
+    #
     # get latest kops URL"
     #
     - name: "get kops latest version"
@@ -426,7 +464,7 @@
       with_items:
         - docker
         # uncomment if you are using kvm virtualisation
-        - libvirt
+        # libvirt
         # lxd
 
   handlers:

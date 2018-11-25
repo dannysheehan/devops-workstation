@@ -462,7 +462,6 @@
     - uuid-dev
     - zlib1g-dev
     - libffi-dev
-    - libvirt-dev
     - librsync-dev
     - libpcsclite-dev
     - libgnome-keyring-dev
@@ -483,6 +482,7 @@
     - gconf2-common
     - libgconf-2-4
     - libcanberra-gtk-module
+    - libvirt-dev
     # lvm2
 
 - name: "Deploy Debian: Add repos"
@@ -528,7 +528,7 @@
     - pritunl-client-electron
     - riot-web
     - cryptomator
-    - virtualbox-5.2
+    # virtualbox-5.2
 
 
 - name: "Deploy Debian: Install other user packages"
@@ -561,20 +561,20 @@
     - cpu-checker
     - calibre
 
-- name: "Deploy Debian: Install kvm packages"
-  apt:
-    pkg: '{{ item }}'
-    state: present
-    update_cache: false
-    cache_valid_time: 3600
-  with_items:
-    - virt-viewer
-    - virt-manager
-    - qemu-kvm
-    - libvirt-bin
-    - virtinst
-    - bridge-utils
-
+#- name: "Deploy Debian: Install kvm packages"
+#  apt:
+#    pkg: '{{ item }}'
+#    state: present
+#    update_cache: false
+#    cache_valid_time: 3600
+#  with_items:
+#    - virt-viewer
+#    - virt-manager
+#    - qemu-kvm
+#    - libvirt-bin
+#    - virtinst
+#    - bridge-utils
+#
 
 - name: "Deploy Debian: Install yubi packages"
   apt:

@@ -1,0 +1,284 @@
+---     # deployment of devops workstation
+
+- hosts: all
+  gather_facts: true
+  become: true
+
+  vars_files:
+    - docker_vars.yml
+
+  roles:
+    - docker
+
+  tasks:
+
+    #
+    # Get latest draft
+    #
+    - name: "get latest kubunetes draft verion"
+      uri:
+        url: "https://github.com/Azure/draft/releases/latest"
+        return_contents: false
+      register: output_result
+
+
+    - name: "get latest version"
+      set_fact:
+        draft_latest: "{{ output_result.url | basename }}"
+
+    - debug:
+        var: draft_latest
+
+    - name: "Download draft"
+      get_url:
+        url: "https://azuredraft.blob.core.windows.net/draft/draft-{{ draft_latest }}-linux-amd64.tar.gz"
+        dest: "/usr/local/src/draft-{{ draft_latest }}.tar.gz"
+
+    - name: "Extract and install heml"
+      unarchive:
+        src: "/usr/local/src/draft-{{ draft_latest }}.tar.gz"
+        dest: "/usr/local/src"
+        copy: false
+
+    - name: "copy to bin directory"
+      copy:
+        src: /usr/local/src/linux-amd64/draft
+        dest: /usr/local/bin/draft
+        mode: 0755
+
+
+    #
+    # Get latest assume
+    #
+    - name: "assume gives errors if credentials file does not exist"
+      file:
+        path: "~/.aws"
+        state: directory
+      become: false
+
+    - name: "assume gives errors if credentials file does not exist"
+      copy:
+        content: ""
+        dest: "~/.aws/credentials"
+        force: false
+      become: false
+
+    - name: "get latest AWS assume role"
+      uri:
+        url: "https://github.com/s3than/assume/releases/latest"
+        return_contents: false
+      register: output_result
+
+
+    - name: "get latest version"
+      set_fact:
+        assume_latest: "{{ output_result.url | basename }}"
+
+    - debug:
+        var: assume_latest
+
+    - name: "Download assume"
+      get_url:
+        url: "https://github.com/s3than/assume/releases/download/{{ assume_latest }}/assume-linux-amd64"
+        dest: "/usr/local/src/assume_{{ assume_latest }}"
+
+    - name: "copy newest version of assume to bin directory"
+      copy:
+        src: "/usr/local/src/assume_{{ assume_latest }}"
+        dest: "/usr/local/bin/assume"
+        mode: 0755
+
+
+    #
+    # Get latest minikube
+    #
+    - name: "get latest minikube verion"
+      uri:
+        url: "https://github.com/kubernetes/minikube/releases/latest"
+        return_contents: false
+      register: output_result
+
+    - name: "get latest version"
+      set_fact:
+        minikube_latest: "{{ output_result.url | basename }}"
+    - debug:
+        var: minikube_latest
+
+    #- name: "Download latest minikube kvm2 driver"
+    #  get_url:
+    #    url: "https://github.com/kubernetes/minikube/releases/download/{{ minikube_latest }}/docker-machine-driver-kvm2"
+    #    dest: "/usr/bin/docker-machine-driver-kvm2"
+    #    mode: 0755
+
+    - name: "Download minikube latest"
+      get_url:
+        url: "https://github.com/kubernetes/minikube/releases/download/v0.28.0/minikube-linux-amd64"
+        dest: "/usr/local/bin/minikube"
+        mode: 0755
+
+    - name: "create autocomplete file"
+      command: minikube completion bash
+      register: autocompletion
+      changed_when: false
+      check_mode: false
+
+    - name: "create autocomplete file"
+      copy:
+        content: "{{ autocompletion.stdout }}"
+        dest: /etc/bash_completion.d/minikube
+
+    #
+    # Get latest stable kubectl
+    #
+    - name: "get latest stable kubectl"
+      set_fact:
+        kubectl_stable: "{{ lookup('url', 'https://storage.googleapis.com/kubernetes-release/release/stable.txt', split_lines=False) | replace('\n', '') }}"
+
+    - debug:
+        var: kubectl_stable
+
+    - name: "Download kubectl"
+      get_url:
+        url: "https://storage.googleapis.com/kubernetes-release/release/{{ kubectl_stable }}/bin/linux/amd64/kubectl"
+        dest: "/usr/local/src/kubectl-{{ kubectl_stable }}"
+
+    - name: "copy to bin directory"
+      copy:
+        src: /usr/local/src/kubectl-{{ kubectl_stable }}
+        dest: /usr/local/bin/kubectl
+        mode: 0755
+
+    - name: "create kubectl file"
+      command: kubectl completion bash
+      register: autocompletion
+      changed_when: false
+      check_mode: false
+
+    - name: "create autocomplete file"
+      copy:
+        content: "{{ autocompletion.stdout }}"
+        dest: /etc/bash_completion.d/kubectl
+
+    #
+    # Get latest helm
+    #
+    - name: "get latest kubunetes heml verion"
+      uri:
+        url: "https://github.com/kubernetes/helm/releases/latest"
+        return_contents: false
+      register: output_result
+
+
+    - name: "get latest version"
+      set_fact:
+        helm_latest: "{{ output_result.url | basename }}"
+
+    - debug:
+        var: helm_latest
+
+    - name: "Download helm"
+      get_url:
+        url: "https://storage.googleapis.com/kubernetes-helm/helm-{{ helm_latest }}-linux-amd64.tar.gz"
+        dest: "/usr/local/src/helm-{{ helm_latest }}.tar.gz"
+
+    - name: "Extract and install heml"
+      unarchive:
+        src: "/usr/local/src/helm-{{ helm_latest }}.tar.gz"
+        dest: /usr/local/src
+        copy: false
+
+    - name: "copy to bin directory"
+      copy:
+        src: /usr/local/src/linux-amd64/helm
+        dest: /usr/local/bin/helm
+        mode: 0755
+
+    - name: "create helm completion file"
+      command: helm completion bash
+      register: autocompletion
+      changed_when: false
+      check_mode: false
+
+    - name: "create autocomplete file"
+      copy:
+        content: "{{ autocompletion.stdout }}"
+        dest: /etc/bash_completion.d/helm
+
+    #
+    # Get latest skaffold
+    #
+    - name: "get latest skaffold"
+      uri:
+        url: "https://github.com/GoogleContainerTools/skaffold/releases/latest"
+        return_contents: false
+      register: output_result
+
+    - name: "get latest version"
+      set_fact:
+        skaffold_latest: "{{ output_result.url | basename }}"
+    - debug:
+        var: skaffold_latest
+
+    - name: "Download skaffold"
+      get_url:
+        url: "https://github.com/GoogleContainerTools/skaffold/releases/download/{{ skaffold_latest }}/skaffold-linux-amd64"
+        dest: "/usr/local/src/skaffold_{{ skaffold_latest }}"
+
+    - name: "copy newest version of awless to bin directory"
+      copy:
+        src: /usr/local/src/skaffold_{{ skaffold_latest }}
+        dest: /usr/local/bin/skaffold
+        mode: 0755
+
+    - name: "create autocomplete file"
+      command: skaffold completion bash
+      register: skaffold_completion
+      changed_when: false
+      check_mode: false
+
+    - name: "create autocomplete file"
+      copy:
+        content: "{{ skaffold_completion.stdout }}"
+        dest: /etc/bash_completion.d/skaffold
+
+    #
+    # Get latest awless
+    #
+    - name: "get latest awless"
+      uri:
+        url: "https://github.com/wallix/awless/releases/latest"
+        return_contents: false
+      register: output_result
+
+    - name: "get latest version"
+      set_fact:
+        awless_latest: "{{ output_result.url | basename }}"
+    - debug:
+        var: awless_latest
+
+    - name: "Download awless"
+      get_url:
+        url: "https://github.com/wallix/awless/releases/download/{{ awless_latest }}/awless-linux-amd64.tar.gz"
+        dest: "/usr/local/src/awless_{{ awless_latest }}.tar.gz"
+
+    - name: "Extract and install awless"
+      unarchive:
+        src: /usr/local/src/awless_{{ awless_latest }}.tar.gz
+        dest: /usr/local/src
+
+    - name: "copy newest version of awless to bin directory"
+      copy:
+        src: /usr/local/src/awless
+        dest: /usr/local/bin/awless
+        mode: 0755
+
+    - name: "create autocomplete file"
+      command: awless completion bash
+      register: awless_completion
+      changed_when: false
+      check_mode: false
+
+    - name: "create autocomplete file"
+      copy:
+        content: "{{ awless_completion.stdout }}"
+        dest: /etc/bash_completion.d/awless

@@ -1,0 +1,20 @@
+---
+
+docker_package: 'docker-ce'
+docker_version: '18.06.0~ce~3-0~ubuntu'
+
+docker_add_to_group:
+  - ansible
+  - danny
+
+# Docker Compose options.
+docker_install_compose: true
+docker_compose_version: '1.23.1'
+
+docker_storage_driver: 'overlay2'
+
+# Variable to configure the which type of logging to use
+# Options: "json-file", "gelf"
+docker_log_driver: 'json-file'
+#docker_log_options:
+#  max-size: 100m

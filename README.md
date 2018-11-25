@@ -29,7 +29,9 @@ Also, implements a handy shell prompt that displays:
 * current k8s context
 
 
-Optionally, allows you to easily push out bash profiles to the servers you manage with all your favourite aliases included:
+Optionally, if you **really** want to treat your servers as pets.
+You can push out bash profiles to the servers you manage with all your 
+favourite aliases included:
 
 * .basrhc aliases and settings
 * .vimrc configuration
@@ -47,9 +49,9 @@ pip install -r requirements.txt
 ansible -l localhost deploy.yml --ask-become
 ```
 
-ALTERNATIVE: You can use bootstrap.sh to install the git and ansible package
-
 `bootstrap.yml` is included to help you setup servers that aren't configured for ansible playbooks to be deployed to.
+
+## Linting
 
 If you want to make code changes, take advantage of pre-commit linting
 
@@ -103,4 +105,10 @@ NOTES:
 
 ```bash
 git config --global core.excludesfile ~/.gitignore
+```
+
+
+## recommended vscode extensions
+```
+cat vscode.extensions | xargs -l1 code --install-extension
 ```
