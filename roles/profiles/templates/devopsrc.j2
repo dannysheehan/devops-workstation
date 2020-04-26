@@ -22,11 +22,12 @@ export EDITOR=vi
 export PROJECT_HOME=~/PROJECTS
 export WORKON_HOME=~/.virtualenvs
 
+# export DOCKER_HOST=
+# export XEN_INVENTORY_INI_PATH=
+
 # export PYENV_VERSION="2.7.12"
 
 export PYENV_VIRTUALENV_DISABLE_PROMPT=1
-
-export EC2_INI_PATH=/etc/ansible/ec2.ini
 
 # export ANSIBLE_VAULT_PASSWORD_FILE=
 
@@ -51,8 +52,6 @@ my_grep_options=(--color=auto --exclude-dir=.cvs --exclude-dir=.git --exclude-di
 
 # User specific aliases and functions
 
-
-
 set_titlebar() {
   case $TERM in
     *xterm*|ansi|rxvt)
@@ -60,6 +59,22 @@ set_titlebar() {
         ;;
     esac
 }
+
+# new stuff
+alias mdcat="pandoc -f markdown -t plain"
+alias getpodnodes='kubectl get pod -o=custom-columns=NODE:.spec.nodeName,NAME:.metadata.name --all-namespaces'
+
+alias kdump="kubectl  get all --all-namespaces"
+
+
+k8-dashboard(){
+  kubectl port-forward -n kube-system "$(kubectl get -n kube-system pod --selector=k8s-app=kubernetes-dashboard -o jsonpath='{.items..metadata.name}')" 8443
+}
+
+kmerge() {
+  KUBECONFIG=~/.kube/kubeconfig:$1 kubectl config view --flatten > ~/.kube/mergedkub && mv ~/.kube/mergedkub ~/.kube/kubeconfig
+}
+
 
 
 # install  colordiff package :)
@@ -357,6 +372,11 @@ if which aws_completer > /dev/null 2>&1; then
 fi
 
 enter_directory(){
+  if [ -f ".terraform/environment" ]; then
+    TERRAFORM_ENV=$(cat ".terraform/environment")
+  else
+    unset TERRAFORM_ENV
+  fi
   if [ "$PWD" != "$PREV_PWD" ]; then
     PREV_PWD="$PWD";
     if [ -e ".nvmrc" ]; then
@@ -364,9 +384,6 @@ enter_directory(){
     elif [[ $(nvm version) != $(nvm version default)  ]]; then
       echo "Reverting to nvm default version."
       nvm use default
-    fi
-    if [ -f ".terraform/environment" ]; then
-      TERRAFORM_ENV=$(cat ".terraform/environment")
     fi
   fi
 }
@@ -388,9 +405,12 @@ set_prompt_vars(){
     AWS_STS_ACCOUNT=""
     AWS_STS_ROLE=$(assume --dt)
   fi
+
+  k8s_current_context=$(kubectl config current-context 2> /dev/null)
+  if [[ $? -eq 0 ]]; then
+    k8s_current_ns=$(kubectl config view -o=jsonpath="{.contexts[?(@.name==\"${k8s_current_context}\")].context.namespace}")
+  fi
 }
 
-
-PROMPT_COMMAND='enter_directory;set_prompt_vars; __git_ps1 "[${Yellow}$(echo -e code $?)$Color_Off]\n${AWS_STS_ROLE:+[${Purple}$(echo -n "AWS: ";echo $AWS_STS_ACCOUNT $AWS_STS_ROLE)$Color_Off]\n}${VIRTUAL_ENV:+[${Yellow}$(basename $VIRTUAL_ENV)$Color_Off]\n}${TERRAFORM_ENV:+[${Red}$(echo -n "TERRAFORM: ";echo $TERRAFORM_ENV)$Color_Off]\n}${NVM_BIN:+[${Red}$(echo -n "node: ";nvm current)$Color_Off]\n}${GEM_HOME:+[${Cyan}$(rvm-prompt i v p g)$Color_Off]\n}${AWS_PROFILE:+[${Yellow}$(echo -n "AWS: ";echo $AWS_PROFILE)$Color_Off]\n}" "\h:\W \u\\\$ " "[%s $(get_sha)]\n";set_titlebar "$USER@${HOSTNAME%%.*} $(basename $PWD)"'
-
+PROMPT_COMMAND='enter_directory;set_prompt_vars; __git_ps1 "[${Yellow}$(echo -e code $?)$Color_Off]\n${AWS_STS_ROLE:+[${Purple}AWS:$AWS_STS_ACCOUNT $AWS_STS_ROLE $AWS_PROFILE$Color_Off]\n}${KUBECONFIG:+[${Blue}K8S: $k8s_current_context $k8s_current_ns$Color_Off]\n}${VIRTUAL_ENV:+[${Yellow}PYENV: $(basename $VIRTUAL_ENV)$Color_Off]\n}${TERRAFORM_ENV:+[${Red}TERRAFORM: $TERRAFORM_ENV${Color_Off}]\n}${NVM_BIN:+[${Red}NODE: $(nvm current)$Color_Off]\n}${GEM_HOME:+[${Cyan}$(rvm-prompt i v p g)$Color_Off]\n}" "\h:\W \u\\\$ " "[%s $(get_sha)]\n";set_titlebar "$USER@${HOSTNAME%%.*} $(basename $PWD) "'
 {% endraw %}

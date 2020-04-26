@@ -1,0 +1,52 @@
+---
+
+# https://hub.docker.com/r/ezka77/xen-orchestra-ce/
+# XenServer management gui web front end
+#  Note: The default Web UI credentials are admin@admin.net / admin
+#
+
+
+version: '3'
+services:
+    orchestra:
+        restart: unless-stopped
+        image: ezka77/xen-orchestra-ce
+        container_name: XO_server
+        ports:
+            - "8000:8000"
+        depends_on:
+            - redis
+        environment:
+            - DEBUG=xo:main
+            - NODE_ENV=production
+            - XOA_PLAN=5
+            # To enable XO superuser features (ex: NFS mount) on the host
+            # uncomment the following lines, it will start XO as superuser
+            # and enable the privileged capabilities for this container (access
+            # host devices, ...) NB: it's a security issue, so be warned !
+            #- USER=root
+        #privileged: true
+        volumes:
+            - /var/tmp/volumes/xo-server:/storage
+        logging: &logging
+            driver: "json-file"
+            options:
+                max-size: "1M"
+                max-file: "2"
+    redis:
+        restart: unless-stopped
+        container_name: XO_redis
+        image: redis:alpine
+        command: redis-server --appendonly yes
+        volumes:
+            - /var/tmp/volumes/redis:/data
+        logging:
+            <<: *logging
+
+networks:
+  default:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet:  10.103.0.1/16

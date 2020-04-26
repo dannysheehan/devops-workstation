@@ -9,49 +9,6 @@
 # sudo apt install oracle-java10-set-default
 
 
-#
-# Install jx
-#
-- name: "get Jenkins jx latest version"
-  uri:
-    url: "https://api.github.com/repos/jenkins-x/jx/releases"
-    method: GET
-    body: JSON
-    return_contents: false
-  register: json_output
-  check_mode: false
-
-- name: "get version url"
-  set_fact:
-    jenkinsx_version: "{{ json_output.json | json_query(version_qry) }}"
-  vars:
-    version_qry: "[0].tag_name"
-
-- debug:
-    var: jenkinsx_version
-
-- name: "Download Jenkinsx"
-  get_url:
-    url: "https://github.com/jenkins-x/jx/releases/download/{{ jenkinsx_version }}/jx-linux-amd64.tar.gz"
-    dest: "/usr/local/src/{{ jenkinsx_version }}_jx.tar.gz"
-
-- name: "Extract and install Jenkinsx"
-  unarchive:
-    src: /usr/local/src/{{ jenkinsx_version }}_jx.tar.gz
-    dest: /usr/local/bin
-    copy: false
-
-- name: "create jx completion file"
-  command: jx completion bash
-  register: autocompletion
-  changed_when: false
-  check_mode: false
-
-- name: "create autocomplete file"
-  copy:
-    content: "{{ autocompletion.stdout }}"
-    dest: /etc/bash_completion.d/jx
-
 - name: "List installed snap packages"
   command: snap list
   register: snap_packages_list
@@ -218,7 +175,7 @@
 - debug:
     var: sqlos_version
 
-- name: "Download Jenkinsx"
+- name: "Download azure data studio"
   get_url:
     url: "https://github.com/Microsoft/azuredatastudio/releases/download/{{ sqlos_version }}/azuredatastudio-linux-{{ sqlos_version }}.deb"
     dest: "/usr/local/src/azuuredatastudio-{{ sqlos_version }}.deb"
@@ -483,7 +440,7 @@
     - libgconf-2-4
     - libcanberra-gtk-module
     - libvirt-dev
-    # lvm2
+    - lvm2
 
 - name: "Deploy Debian: Add repos"
   apt_repository:
@@ -501,7 +458,7 @@
     - 'deb [arch=amd64] http://ppa.launchpad.net/mozillateam/firefox-next/ubuntu {{ ansible_distribution_release }} main'
     - 'deb [arch=amd64] https://riot.im/packages/debian/ {{ ansible_distribution_release }} main'
     - 'ppa:sebastian-stenzel/cryptomator'
-    - 'deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian {{ ansible_distribution_release }} contrib'
+    # 'deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian {{ ansible_distribution_release }} contrib'
   register: repos
 
 - name: "Deploy Debian: install repo packages"
@@ -528,6 +485,8 @@
     - pritunl-client-electron
     - riot-web
     - cryptomator
+    - retext
+    - redis-cli
     # virtualbox-5.2
 
 
@@ -560,21 +519,22 @@
     - netcat
     - cpu-checker
     - calibre
+    - gparted
 
-#- name: "Deploy Debian: Install kvm packages"
-#  apt:
-#    pkg: '{{ item }}'
-#    state: present
-#    update_cache: false
-#    cache_valid_time: 3600
-#  with_items:
-#    - virt-viewer
-#    - virt-manager
-#    - qemu-kvm
-#    - libvirt-bin
-#    - virtinst
-#    - bridge-utils
-#
+- name: "Deploy Debian: Install kvm packages"
+  apt:
+    pkg: '{{ item }}'
+    state: present
+    update_cache: false
+    cache_valid_time: 3600
+  with_items:
+    - virt-viewer
+    - virt-manager
+    - qemu-kvm
+    - libvirt-bin
+    - virtinst
+    - bridge-utils
+
 
 - name: "Deploy Debian: Install yubi packages"
   apt:

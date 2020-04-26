@@ -46,7 +46,7 @@ apt install ansible git
 echo 'localhost ansible_host=127.0.0.1 ansible_connection=local' >> /etc/ansible/hosts
 pip install -r requirements.txt
 
-ansible -l localhost deploy.yml --ask-become
+ansible-playbook -l localhost deploy.yml --ask-become
 ```
 
 `bootstrap.yml` is included to help you setup servers that aren't configured for ansible playbooks to be deployed to.

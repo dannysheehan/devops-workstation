@@ -74,7 +74,7 @@
       # vagrant-vbguest   # required to install VirtualBox Guest Addtions into the Virtual Machine
       - vagrant-hosts     # https://github.com/oscar-stack/vagrant-hosts
       # vagrant-vbox-snapshot
-      # vagrant-libvirt
+      - vagrant-libvirt
 
     snap_classic_packages:
       - powershell
@@ -90,11 +90,11 @@
       # lxd
 
   tasks:
-    #- import_tasks: deploy-debian.yml
-    #  become: true
-    #  when: ansible_os_family == 'Debian'
-    #  tags:
-    #    - package
+    - import_tasks: deploy-debian.yml
+      become: true
+      when: ansible_os_family == 'Debian'
+      tags:
+        - package
 
 
     #
@@ -382,9 +382,10 @@
         content: "{{ autocompletion.stdout }}"
         dest: /etc/bash_completion.d/kops
 
-    # name: ensue we have latest npm version
-    # https://docs.npmjs.com/getting-started/installing-node
-    # npm install npm@latest -g
+    #- name: ensue we have latest npm version
+    #  #https://docs.npmjs.com/getting-started/installing-node
+    #  npm install npm@latest -g
+
     - name: install extra system npm modules
       npm:
         name: '{{ item }}'
@@ -463,8 +464,8 @@
         append: true
       with_items:
         - docker
+        - libvirt
         # uncomment if you are using kvm virtualisation
-        # libvirt
         # lxd
 
   handlers:
