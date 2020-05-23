@@ -224,7 +224,7 @@
     #
     # Get latest helm
     #
-    - name: "get latest kubernetes melm verion"
+    - name: "get latest kubernetes helm verion"
       uri:
         url: "https://github.com/kubernetes/helm/releases/latest"
         return_contents: false
