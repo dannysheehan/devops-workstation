@@ -224,7 +224,7 @@
     #
     # Get latest helm
     #
-    - name: "get latest kubunetes heml verion"
+    - name: "get latest kubernetes melm verion"
       uri:
         url: "https://github.com/kubernetes/helm/releases/latest"
         return_contents: false
@@ -243,7 +243,7 @@
         url: "https://storage.googleapis.com/kubernetes-helm/helm-{{ helm_latest }}-linux-amd64.tar.gz"
         dest: "/usr/local/src/helm-{{ helm_latest }}.tar.gz"
 
-    - name: "Extract and install heml"
+    - name: "Extract and install helm"
       unarchive:
         src: "/usr/local/src/helm-{{ helm_latest }}.tar.gz"
         dest: /usr/local/src
