@@ -27,8 +27,8 @@
     aws_region: us-east-1   # Cheapest region by default.
     # Set the version of Node.js to install ("0.12", "4.x", "5.x", "6.x", "8.x").
     # Version numbers from Nodesource: https://github.com/nodesource/distributions
-    nodejs_version: "8.x"
-    go_version: 1.11
+    nodejs_version: "12.x"
+    go_version: 1.14.2
     npm_config_prefix: "/usr"
 
     devops_user: "{{ lookup('env', 'USER') }}"

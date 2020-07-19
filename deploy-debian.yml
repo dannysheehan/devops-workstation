@@ -35,6 +35,12 @@
   tags:
     - install-snap-packages
 
+# wget "https://github.com/AppImage/appimaged/releases/download/continuous/appimaged-x86_64.AppImage"
+
+
+# https://github.com/AppImage/AppImageUpdate/releases/download/continuous/AppImageUpdate-x86_64.AppImage
+
+
 #
 # install nvm
 #
@@ -42,7 +48,7 @@
 - name: "get latest nvm"
   uri:
     url: "https://github.com/creationix/nvm/releases/latest"
-    return_contents: false
+    return_content: false
   register: output_result
 
 
@@ -162,7 +168,7 @@
     url: "https://api.github.com/repos/Microsoft/sqlopsstudio/releases"
     method: GET
     body: JSON
-    return_contents: false
+    return_content: false
   register: json_output
   check_mode: false
 
@@ -177,7 +183,7 @@
 
 - name: "Download azure data studio"
   get_url:
-    url: "https://github.com/Microsoft/azuredatastudio/releases/download/{{ sqlos_version }}/azuredatastudio-linux-{{ sqlos_version }}.deb"
+    url: https://azuredatastudiobuilds.blob.core.windows.net/releases/{{ sqlos_version }}/azuredatastudio-linux-{{ sqlos_version }}.deb
     dest: "/usr/local/src/azuuredatastudio-{{ sqlos_version }}.deb"
 
 
@@ -204,7 +210,7 @@
     url: "https://checkpoint-api.hashicorp.com/v1/check/terraform"
     method: GET
     body: JSON
-    return_contents: false
+    return_content: false
   register: json_output
   check_mode: false
 
@@ -245,7 +251,7 @@
     url: "https://checkpoint-api.hashicorp.com/v1/check/packer"
     method: GET
     body: JSON
-    return_contents: false
+    return_content: false
   register: json_output
   check_mode: false
 
@@ -280,7 +286,7 @@
     url: "https://releases.hashicorp.com/vagrant/index.json"
     method: GET
     body: JSON
-    return_contents: false
+    return_content: false
   register: json_output
   check_mode: false
 
@@ -406,8 +412,8 @@
     - jq
     - encfs
     - lsyncd
-    - python-pip
-    - python-dev
+    - python3-pip
+    - python3-dev
     - build-essential
     - pkg-config
     - automake
@@ -421,7 +427,6 @@
     - libffi-dev
     - librsync-dev
     - libpcsclite-dev
-    - libgnome-keyring-dev
     - swig
     - network-manager-openconnect-gnome
     - libpam-google-authenticator
@@ -441,6 +446,8 @@
     - libcanberra-gtk-module
     - libvirt-dev
     - lvm2
+    - firejail
+    - firetools
 
 - name: "Deploy Debian: Add repos"
   apt_repository:
@@ -449,14 +456,15 @@
   with_items:
     - 'deb [arch=amd64] http://repo.pritunl.com/stable/apt bionic main'
     - 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
-    - 'deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main'
-    - 'deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod {{ ansible_distribution_release }} main'
-    - 'deb [arch=amd64] http://apt.insynchq.com/ubuntu {{ ansible_distribution_release }} non-free contrib'
-    - 'deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable'
-    - 'deb [arch=amd64] https://packages.cloud.google.com/apt cloud-sdk-{{ ansible_distribution_release }} main'
+    # 'deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main'
+    - 'deb [arch=amd64] https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version}}/prod {{ ansible_distribution_release }} main'
+    # 'deb [arch=amd64] http://apt.insynchq.com/ubuntu {{ ansible_distribution_release }} non-free contrib'
+    # 'deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable'
+    - 'deb [arch=amd64] https://download.docker.com/linux/ubuntu eoan stable'
+    - 'deb [arch=amd64] https://packages.cloud.google.com/apt cloud-sdk main'
     - 'deb [arch=amd64] https://deb.nodesource.com/node_{{ nodejs_version }} {{ ansible_distribution_release }} main'
     - 'deb [arch=amd64] http://ppa.launchpad.net/mozillateam/firefox-next/ubuntu {{ ansible_distribution_release }} main'
-    - 'deb [arch=amd64] https://riot.im/packages/debian/ {{ ansible_distribution_release }} main'
+    # 'deb [arch=amd64] https://riot.im/packages/debian/ {{ ansible_distribution_release }} main'
     - 'ppa:sebastian-stenzel/cryptomator'
     # 'deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian {{ ansible_distribution_release }} contrib'
   register: repos
@@ -473,20 +481,20 @@
     - docker-ce
     - dkms
     - google-chrome-stable
-    - insync
+    # insync
     - google-cloud-sdk
     - google-cloud-sdk-app-engine-python
     - google-cloud-sdk-app-engine-python-extras
     - nodejs
     - firefox
-    - mssql-tools     # microsoft
-    - unixodbc-dev     # microsoft
+    # mssql-tools     # microsoft
+    # unixodbc-dev     # microsoft
     - code
     - pritunl-client-electron
-    - riot-web
+    # riot-web
     - cryptomator
     - retext
-    - redis-cli
+    # redis-cli
     # virtualbox-5.2
 
 
@@ -507,7 +515,7 @@
     - p7zip-full
     - whois
     - nmap
-    - zenmap
+    # zenmap
     - dnsutils
     - net-tools
     - pandoc
@@ -520,6 +528,29 @@
     - cpu-checker
     - calibre
     - gparted
+    - redis-tools
+    - expect-dev
+    - amqp-tools
+    - icdiff
+    - dos2unix
+    - apache2-utils
+    - tmuxinator
+    - terminator
+    - bats
+    - zip
+    - httpie
+    - htop
+    - socat
+    - cloud-utils
+    - hwdata
+    - lastpass-cli
+    - psensor
+    - putty
+    - rrdtool
+    - smbclient
+    - tmux
+    - virtualenv
+    - virtualenvwrapper
 
 - name: "Deploy Debian: Install kvm packages"
   apt:
@@ -531,7 +562,7 @@
     - virt-viewer
     - virt-manager
     - qemu-kvm
-    - libvirt-bin
+    # libvirt-bin
     - virtinst
     - bridge-utils
 
