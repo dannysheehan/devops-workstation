@@ -27,8 +27,8 @@
     aws_region: us-east-1   # Cheapest region by default.
     # Set the version of Node.js to install ("0.12", "4.x", "5.x", "6.x", "8.x").
     # Version numbers from Nodesource: https://github.com/nodesource/distributions
-    nodejs_version: "12.x"
-    go_version: 1.14.2
+    nodejs_version: "14.x"
+    go_version: 1.15.1
     npm_config_prefix: "/usr"
 
     devops_user: "{{ lookup('env', 'USER') }}"
@@ -47,9 +47,7 @@
       - virtualenvwrapper
       - jmespath
       - ec2-ssh
-      - docker-compose
       - httpstat
-      - docker
       - molecule           # https://molecule.readthedocs.io
       - testinfra
       - pylint
@@ -85,9 +83,9 @@
       # skype
 
     snap_packages:
-      - spotify
       - vlc
       # lxd
+      # spotify
 
   tasks:
     - import_tasks: deploy-debian.yml
@@ -406,7 +404,7 @@
       pip:
         name: '{{ item }}'
         state: present
-        executable: pip2
+        executable: pip3
         # extra_args: --user
       with_items:
         "{{ pip_modules }}"
